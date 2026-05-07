@@ -1,0 +1,1785 @@
+{
+  "subsidiary": {
+    "links": [
+      {
+        "href": "https://epm-test-pubpeople01.epm.uk-cardiff-1.ocs.oraclecloud.com:443/HyperionPlanning/rest/v3/applications/NetSuite/plantypes/Custom/dimensions/Subsidiary",
+        "action": "GET",
+        "rel": "self"
+      }
+    ],
+    "children": [
+      {
+        "name": "No Entity",
+        "path": "/Subsidiary/No Entity",
+        "displayPath": "/Subsidiary/No Entity",
+        "parentId": "c9128a93-7ffe-4c09-9fd3-3da31a38d73a",
+        "id": "a3bd761a-5497-4b4a-b6b5-1b78f8de99cc",
+        "dimName": "Subsidiary",
+        "parentName": "Subsidiary",
+        "level": 0,
+        "usedIn": [
+          "Custom",
+          "Report",
+          "NSP_NFS"
+        ],
+        "aliasPath": "/Subsidiary/No Entity",
+        "valid": true,
+        "invalidDueToValidIntersection": false,
+        "oldName": "No Entity",
+        "dataStorage": "Store Data",
+        "dataType": "Unspecified",
+        "objectTypeId": 33,
+        "twoPass": false,
+        "generation": 2,
+        "objectType": "Entity"
+      },
+      {
+        "name": "NSP_Total Subsidiary",
+        "path": "/Subsidiary/NSP_Total Subsidiary",
+        "displayPath": "/Subsidiary/NSP_Total Subsidiary",
+        "parentId": "c9128a93-7ffe-4c09-9fd3-3da31a38d73a",
+        "id": "32fcf425-e785-4825-9c07-d0aeb86d17d0",
+        "children": [
+          {
+            "name": "Undefined_Subsidiary",
+            "path": "/Subsidiary/NSP_Total Subsidiary/Undefined_Subsidiary",
+            "displayPath": "/Subsidiary/NSP_Total Subsidiary/Undefined_Subsidiary",
+            "parentId": "32fcf425-e785-4825-9c07-d0aeb86d17d0",
+            "id": "b296e1d9-32f4-472f-8614-cbfc5fe99f81",
+            "dimName": "Subsidiary",
+            "parentName": "NSP_Total Subsidiary",
+            "level": 0,
+            "usedIn": [
+              "Custom",
+              "Report",
+              "NSP_NFS"
+            ],
+            "aliasPath": "/Subsidiary/Parent Company (Consolidated)/Undefined_Subsidiary",
+            "valid": true,
+            "invalidDueToValidIntersection": false,
+            "oldName": "Undefined_Subsidiary",
+            "dataStorage": "Store Data",
+            "dataType": "Unspecified",
+            "objectTypeId": 33,
+            "twoPass": false,
+            "generation": 3,
+            "objectType": "Entity"
+          },
+          {
+            "name": "P_SUB_1",
+            "path": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1",
+            "displayPath": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1",
+            "parentId": "32fcf425-e785-4825-9c07-d0aeb86d17d0",
+            "id": "678b1b66-471b-4f30-b195-cc82314ae8e8",
+            "children": [
+              {
+                "name": "SUB_1",
+                "path": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/SUB_1",
+                "displayPath": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/SUB_1",
+                "parentId": "678b1b66-471b-4f30-b195-cc82314ae8e8",
+                "id": "3568beb1-5096-42f8-97ec-b7105b1e0b16",
+                "dimName": "Subsidiary",
+                "parentName": "P_SUB_1",
+                "level": 0,
+                "usedIn": [
+                  "Custom",
+                  "Report",
+                  "NSP_NFS"
+                ],
+                "aliasPath": "/Subsidiary/Parent Company (Consolidated)/Total Subsidiary/Subsidiary1",
+                "alias": "Subsidiary1",
+                "valid": true,
+                "invalidDueToValidIntersection": false,
+                "oldName": "SUB_1",
+                "dataStorage": "Store Data",
+                "dataType": "Unspecified",
+                "objectTypeId": 33,
+                "twoPass": false,
+                "generation": 4,
+                "objectType": "Entity"
+              },
+              {
+                "name": "SUB_3",
+                "path": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/SUB_3",
+                "displayPath": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/SUB_3",
+                "parentId": "678b1b66-471b-4f30-b195-cc82314ae8e8",
+                "id": "9601bc1f-5a95-41ed-a86d-bc2ace7afa1f",
+                "dimName": "Subsidiary",
+                "parentName": "P_SUB_1",
+                "level": 0,
+                "usedIn": [
+                  "Custom",
+                  "Report",
+                  "NSP_NFS"
+                ],
+                "aliasPath": "/Subsidiary/Parent Company (Consolidated)/Total Subsidiary/Subsidiary3",
+                "alias": "Subsidiary3",
+                "valid": true,
+                "invalidDueToValidIntersection": false,
+                "oldName": "SUB_3",
+                "dataStorage": "Store Data",
+                "dataType": "Unspecified",
+                "objectTypeId": 33,
+                "twoPass": false,
+                "generation": 4,
+                "objectType": "Entity"
+              },
+              {
+                "name": "P_SUB_4",
+                "path": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_4",
+                "displayPath": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_4",
+                "parentId": "678b1b66-471b-4f30-b195-cc82314ae8e8",
+                "id": "6f57b154-0d42-4ef0-ae99-a6b16f17a8e3",
+                "children": [
+                  {
+                    "name": "SUB_4",
+                    "path": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_4/SUB_4",
+                    "displayPath": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_4/SUB_4",
+                    "parentId": "6f57b154-0d42-4ef0-ae99-a6b16f17a8e3",
+                    "id": "51f8a7a9-eac3-43a3-9001-29406ed3e85f",
+                    "dimName": "Subsidiary",
+                    "parentName": "P_SUB_4",
+                    "level": 0,
+                    "usedIn": [
+                      "Custom",
+                      "Report",
+                      "NSP_NFS"
+                    ],
+                    "aliasPath": "/Subsidiary/Parent Company (Consolidated)/Total Subsidiary/Total Subsidiary4/Subsidiary4",
+                    "alias": "Subsidiary4",
+                    "valid": true,
+                    "invalidDueToValidIntersection": false,
+                    "oldName": "SUB_4",
+                    "dataStorage": "Store Data",
+                    "dataType": "Unspecified",
+                    "objectTypeId": 33,
+                    "twoPass": false,
+                    "generation": 5,
+                    "objectType": "Entity"
+                  },
+                  {
+                    "name": "SUB_14",
+                    "path": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_4/SUB_14",
+                    "displayPath": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_4/SUB_14",
+                    "parentId": "6f57b154-0d42-4ef0-ae99-a6b16f17a8e3",
+                    "id": "4f4e421d-a5c4-4274-86a1-663bdcb39b56",
+                    "dimName": "Subsidiary",
+                    "parentName": "P_SUB_4",
+                    "level": 0,
+                    "usedIn": [
+                      "Custom",
+                      "Report",
+                      "NSP_NFS"
+                    ],
+                    "aliasPath": "/Subsidiary/Parent Company (Consolidated)/Total Subsidiary/Total Subsidiary4/Subsidiary14",
+                    "alias": "Subsidiary14",
+                    "valid": true,
+                    "invalidDueToValidIntersection": false,
+                    "oldName": "SUB_14",
+                    "dataStorage": "Store Data",
+                    "dataType": "Unspecified",
+                    "objectTypeId": 33,
+                    "twoPass": false,
+                    "generation": 5,
+                    "objectType": "Entity"
+                  }
+                ],
+                "dimName": "Subsidiary",
+                "parentName": "P_SUB_1",
+                "level": 1,
+                "usedIn": [
+                  "Custom",
+                  "Report",
+                  "NSP_NFS"
+                ],
+                "aliasPath": "/Subsidiary/Parent Company (Consolidated)/Total Subsidiary/Total Subsidiary4",
+                "alias": "Total Subsidiary4",
+                "valid": true,
+                "invalidDueToValidIntersection": false,
+                "oldName": "P_SUB_4",
+                "dataStorage": "Store Data",
+                "dataType": "Unspecified",
+                "objectTypeId": 33,
+                "twoPass": false,
+                "generation": 4,
+                "objectType": "Entity"
+              },
+              {
+                "name": "SUB_13",
+                "path": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/SUB_13",
+                "displayPath": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/SUB_13",
+                "parentId": "678b1b66-471b-4f30-b195-cc82314ae8e8",
+                "id": "37e063bd-c900-402a-ba70-f13caef6b1dd",
+                "dimName": "Subsidiary",
+                "parentName": "P_SUB_1",
+                "level": 0,
+                "usedIn": [
+                  "Custom",
+                  "Report",
+                  "NSP_NFS"
+                ],
+                "aliasPath": "/Subsidiary/Parent Company (Consolidated)/Total Subsidiary/Subsidiary13",
+                "alias": "Subsidiary13",
+                "valid": true,
+                "invalidDueToValidIntersection": false,
+                "oldName": "SUB_13",
+                "dataStorage": "Store Data",
+                "dataType": "Unspecified",
+                "objectTypeId": 33,
+                "twoPass": false,
+                "generation": 4,
+                "objectType": "Entity"
+              },
+              {
+                "name": "P_SUB_16",
+                "path": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16",
+                "displayPath": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16",
+                "parentId": "678b1b66-471b-4f30-b195-cc82314ae8e8",
+                "id": "b49f1566-3ad9-47e9-8d1f-bb3673013d65",
+                "children": [
+                  {
+                    "name": "SUB_16",
+                    "path": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/SUB_16",
+                    "displayPath": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/SUB_16",
+                    "parentId": "b49f1566-3ad9-47e9-8d1f-bb3673013d65",
+                    "id": "ee857f7f-05f6-46e6-8bbd-7a5303070edd",
+                    "dimName": "Subsidiary",
+                    "parentName": "P_SUB_16",
+                    "level": 0,
+                    "usedIn": [
+                      "Custom",
+                      "Report",
+                      "NSP_NFS"
+                    ],
+                    "aliasPath": "/Subsidiary/Parent Company (Consolidated)/Total Subsidiary/Total Subsidiary16/XYZ",
+                    "alias": "XYZ",
+                    "valid": true,
+                    "invalidDueToValidIntersection": false,
+                    "oldName": "SUB_16",
+                    "dataStorage": "Store Data",
+                    "dataType": "Unspecified",
+                    "objectTypeId": 33,
+                    "twoPass": false,
+                    "generation": 5,
+                    "objectType": "Entity"
+                  },
+                  {
+                    "name": "SUB_6",
+                    "path": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/SUB_6",
+                    "displayPath": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/SUB_6",
+                    "parentId": "b49f1566-3ad9-47e9-8d1f-bb3673013d65",
+                    "id": "f69173aa-ec0f-458f-8b38-f9c02185b498",
+                    "dimName": "Subsidiary",
+                    "parentName": "P_SUB_16",
+                    "level": 0,
+                    "usedIn": [
+                      "Custom",
+                      "Report",
+                      "NSP_NFS"
+                    ],
+                    "aliasPath": "/Subsidiary/Parent Company (Consolidated)/Total Subsidiary/Total Subsidiary16/Subsidiary6",
+                    "alias": "Subsidiary6",
+                    "valid": true,
+                    "invalidDueToValidIntersection": false,
+                    "oldName": "SUB_6",
+                    "dataStorage": "Store Data",
+                    "dataType": "Unspecified",
+                    "objectTypeId": 33,
+                    "twoPass": false,
+                    "generation": 5,
+                    "objectType": "Entity"
+                  },
+                  {
+                    "name": "SUB_7",
+                    "path": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/SUB_7",
+                    "displayPath": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/SUB_7",
+                    "parentId": "b49f1566-3ad9-47e9-8d1f-bb3673013d65",
+                    "id": "d803ef6c-d4ea-44ac-833d-de1a32821978",
+                    "dimName": "Subsidiary",
+                    "parentName": "P_SUB_16",
+                    "level": 0,
+                    "usedIn": [
+                      "Custom",
+                      "Report",
+                      "NSP_NFS"
+                    ],
+                    "aliasPath": "/Subsidiary/Parent Company (Consolidated)/Total Subsidiary/Total Subsidiary16/Subsidiary7",
+                    "alias": "Subsidiary7",
+                    "valid": true,
+                    "invalidDueToValidIntersection": false,
+                    "oldName": "SUB_7",
+                    "dataStorage": "Store Data",
+                    "dataType": "Unspecified",
+                    "objectTypeId": 33,
+                    "twoPass": false,
+                    "generation": 5,
+                    "objectType": "Entity"
+                  },
+                  {
+                    "name": "P_SUB_8",
+                    "path": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/P_SUB_8",
+                    "displayPath": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/P_SUB_8",
+                    "parentId": "b49f1566-3ad9-47e9-8d1f-bb3673013d65",
+                    "id": "6fa4a418-a27d-4cd3-b9cf-27f30cc7fb21",
+                    "children": [
+                      {
+                        "name": "SUB_8",
+                        "path": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/P_SUB_8/SUB_8",
+                        "displayPath": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/P_SUB_8/SUB_8",
+                        "parentId": "6fa4a418-a27d-4cd3-b9cf-27f30cc7fb21",
+                        "id": "0ac57d7b-4f3e-41a4-83e7-e33344115cb8",
+                        "dimName": "Subsidiary",
+                        "parentName": "P_SUB_8",
+                        "level": 0,
+                        "usedIn": [
+                          "Custom",
+                          "Report",
+                          "NSP_NFS"
+                        ],
+                        "aliasPath": "/Subsidiary/Parent Company (Consolidated)/Total Subsidiary/Total Subsidiary16/Total Subsidiary8/PQR",
+                        "alias": "PQR",
+                        "valid": true,
+                        "invalidDueToValidIntersection": false,
+                        "oldName": "SUB_8",
+                        "dataStorage": "Store Data",
+                        "dataType": "Unspecified",
+                        "objectTypeId": 33,
+                        "twoPass": false,
+                        "generation": 6,
+                        "objectType": "Entity"
+                      },
+                      {
+                        "name": "SUB_9",
+                        "path": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/P_SUB_8/SUB_9",
+                        "displayPath": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/P_SUB_8/SUB_9",
+                        "parentId": "6fa4a418-a27d-4cd3-b9cf-27f30cc7fb21",
+                        "id": "4d4b67d4-cc73-4f23-ab35-c28eb99d1a81",
+                        "dimName": "Subsidiary",
+                        "parentName": "P_SUB_8",
+                        "level": 0,
+                        "usedIn": [
+                          "Custom",
+                          "Report",
+                          "NSP_NFS"
+                        ],
+                        "aliasPath": "/Subsidiary/Parent Company (Consolidated)/Total Subsidiary/Total Subsidiary16/Total Subsidiary8/Subsidiary9",
+                        "alias": "Subsidiary9",
+                        "valid": true,
+                        "invalidDueToValidIntersection": false,
+                        "oldName": "SUB_9",
+                        "dataStorage": "Store Data",
+                        "dataType": "Unspecified",
+                        "objectTypeId": 33,
+                        "twoPass": false,
+                        "generation": 6,
+                        "objectType": "Entity"
+                      },
+                      {
+                        "name": "SUB_10",
+                        "path": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/P_SUB_8/SUB_10",
+                        "displayPath": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/P_SUB_8/SUB_10",
+                        "parentId": "6fa4a418-a27d-4cd3-b9cf-27f30cc7fb21",
+                        "id": "8f9ca14a-ea01-4077-a252-7ed84efb86db",
+                        "dimName": "Subsidiary",
+                        "parentName": "P_SUB_8",
+                        "level": 0,
+                        "usedIn": [
+                          "Custom",
+                          "Report",
+                          "NSP_NFS"
+                        ],
+                        "aliasPath": "/Subsidiary/Parent Company (Consolidated)/Total Subsidiary/Total Subsidiary16/Total Subsidiary8/ABC",
+                        "alias": "ABC",
+                        "valid": true,
+                        "invalidDueToValidIntersection": false,
+                        "oldName": "SUB_10",
+                        "dataStorage": "Store Data",
+                        "dataType": "Unspecified",
+                        "objectTypeId": 33,
+                        "twoPass": false,
+                        "generation": 6,
+                        "objectType": "Entity"
+                      },
+                      {
+                        "name": "SUB_15",
+                        "path": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/P_SUB_8/SUB_15",
+                        "displayPath": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/P_SUB_8/SUB_15",
+                        "parentId": "6fa4a418-a27d-4cd3-b9cf-27f30cc7fb21",
+                        "id": "c5289f4c-1905-438b-94b1-6e041cb0d0de",
+                        "dimName": "Subsidiary",
+                        "parentName": "P_SUB_8",
+                        "level": 0,
+                        "usedIn": [
+                          "Custom",
+                          "Report",
+                          "NSP_NFS"
+                        ],
+                        "aliasPath": "/Subsidiary/Parent Company (Consolidated)/Total Subsidiary/Total Subsidiary16/Total Subsidiary8/Subsidiary15",
+                        "alias": "Subsidiary15",
+                        "valid": true,
+                        "invalidDueToValidIntersection": false,
+                        "oldName": "SUB_15",
+                        "dataStorage": "Store Data",
+                        "dataType": "Unspecified",
+                        "objectTypeId": 33,
+                        "twoPass": false,
+                        "generation": 6,
+                        "objectType": "Entity"
+                      }
+                    ],
+                    "dimName": "Subsidiary",
+                    "parentName": "P_SUB_16",
+                    "level": 1,
+                    "usedIn": [
+                      "Custom",
+                      "Report",
+                      "NSP_NFS"
+                    ],
+                    "aliasPath": "/Subsidiary/Parent Company (Consolidated)/Total Subsidiary/Total Subsidiary16/Total Subsidiary8",
+                    "alias": "Total Subsidiary8",
+                    "valid": true,
+                    "invalidDueToValidIntersection": false,
+                    "oldName": "P_SUB_8",
+                    "dataStorage": "Store Data",
+                    "dataType": "Unspecified",
+                    "objectTypeId": 33,
+                    "twoPass": false,
+                    "generation": 5,
+                    "objectType": "Entity"
+                  },
+                  {
+                    "name": "SUB_11",
+                    "path": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/SUB_11",
+                    "displayPath": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/SUB_11",
+                    "parentId": "b49f1566-3ad9-47e9-8d1f-bb3673013d65",
+                    "id": "6cb33369-af22-46f6-a89d-b631913f0246",
+                    "dimName": "Subsidiary",
+                    "parentName": "P_SUB_16",
+                    "level": 0,
+                    "usedIn": [
+                      "Custom",
+                      "Report",
+                      "NSP_NFS"
+                    ],
+                    "aliasPath": "/Subsidiary/Parent Company (Consolidated)/Total Subsidiary/Total Subsidiary16/Subsidiary11",
+                    "alias": "Subsidiary11",
+                    "valid": true,
+                    "invalidDueToValidIntersection": false,
+                    "oldName": "SUB_11",
+                    "dataStorage": "Store Data",
+                    "dataType": "Unspecified",
+                    "objectTypeId": 33,
+                    "twoPass": false,
+                    "generation": 5,
+                    "objectType": "Entity"
+                  },
+                  {
+                    "name": "SUB_17",
+                    "path": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/SUB_17",
+                    "displayPath": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/SUB_17",
+                    "parentId": "b49f1566-3ad9-47e9-8d1f-bb3673013d65",
+                    "id": "c1f28917-7acc-4d5b-944b-c48bb6d4a637",
+                    "dimName": "Subsidiary",
+                    "parentName": "P_SUB_16",
+                    "level": 0,
+                    "usedIn": [
+                      "Custom",
+                      "Report",
+                      "NSP_NFS"
+                    ],
+                    "aliasPath": "/Subsidiary/Parent Company (Consolidated)/Total Subsidiary/Total Subsidiary16/Subsidiary17",
+                    "alias": "Subsidiary17",
+                    "valid": true,
+                    "invalidDueToValidIntersection": false,
+                    "oldName": "SUB_17",
+                    "dataStorage": "Store Data",
+                    "dataType": "Unspecified",
+                    "objectTypeId": 33,
+                    "twoPass": false,
+                    "generation": 5,
+                    "objectType": "Entity"
+                  },
+                  {
+                    "name": "SUB_18",
+                    "path": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/SUB_18",
+                    "displayPath": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/SUB_18",
+                    "parentId": "b49f1566-3ad9-47e9-8d1f-bb3673013d65",
+                    "id": "57522125-c33d-4735-8ae3-0d0845a709b3",
+                    "dimName": "Subsidiary",
+                    "parentName": "P_SUB_16",
+                    "level": 0,
+                    "usedIn": [
+                      "Custom",
+                      "Report",
+                      "NSP_NFS"
+                    ],
+                    "aliasPath": "/Subsidiary/Parent Company (Consolidated)/Total Subsidiary/Total Subsidiary16/Subsidiary18",
+                    "alias": "Subsidiary18",
+                    "valid": true,
+                    "invalidDueToValidIntersection": false,
+                    "oldName": "SUB_18",
+                    "dataStorage": "Store Data",
+                    "dataType": "Unspecified",
+                    "objectTypeId": 33,
+                    "twoPass": false,
+                    "generation": 5,
+                    "objectType": "Entity"
+                  },
+                  {
+                    "name": "SUB_19",
+                    "path": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/SUB_19",
+                    "displayPath": "/Subsidiary/NSP_Total Subsidiary/P_SUB_1/P_SUB_16/SUB_19",
+                    "parentId": "b49f1566-3ad9-47e9-8d1f-bb3673013d65",
+                    "id": "a8aa7297-15a6-4bf2-97ea-c7302ccf3ce0",
+                    "dimName": "Subsidiary",
+                    "parentName": "P_SUB_16",
+                    "level": 0,
+                    "usedIn": [
+                      "Custom",
+                      "Report",
+                      "NSP_NFS"
+                    ],
+                    "aliasPath": "/Subsidiary/Parent Company (Consolidated)/Total Subsidiary/Total Subsidiary16/Subsidiary19",
+                    "alias": "Subsidiary19",
+                    "valid": true,
+                    "invalidDueToValidIntersection": false,
+                    "oldName": "SUB_19",
+                    "dataStorage": "Store Data",
+                    "dataType": "Unspecified",
+                    "objectTypeId": 33,
+                    "twoPass": false,
+                    "generation": 5,
+                    "objectType": "Entity"
+                  }
+                ],
+                "dimName": "Subsidiary",
+                "parentName": "P_SUB_1",
+                "level": 2,
+                "usedIn": [
+                  "Custom",
+                  "Report",
+                  "NSP_NFS"
+                ],
+                "aliasPath": "/Subsidiary/Parent Company (Consolidated)/Total Subsidiary/Total Subsidiary16",
+                "alias": "Total Subsidiary16",
+                "valid": true,
+                "invalidDueToValidIntersection": false,
+                "oldName": "P_SUB_16",
+                "dataStorage": "Store Data",
+                "dataType": "Unspecified",
+                "objectTypeId": 33,
+                "twoPass": false,
+                "generation": 4,
+                "objectType": "Entity"
+              }
+            ],
+            "dimName": "Subsidiary",
+            "parentName": "NSP_Total Subsidiary",
+            "level": 3,
+            "usedIn": [
+              "Custom",
+              "Report",
+              "NSP_NFS"
+            ],
+            "aliasPath": "/Subsidiary/Parent Company (Consolidated)/Total Subsidiary",
+            "alias": "Total Subsidiary",
+            "valid": true,
+            "invalidDueToValidIntersection": false,
+            "oldName": "P_SUB_1",
+            "dataStorage": "Store Data",
+            "dataType": "Unspecified",
+            "objectTypeId": 33,
+            "twoPass": false,
+            "generation": 3,
+            "objectType": "Entity"
+          }
+        ],
+        "dimName": "Subsidiary",
+        "parentName": "Subsidiary",
+        "level": 4,
+        "usedIn": [
+          "Custom",
+          "Report",
+          "NSP_NFS"
+        ],
+        "aliasPath": "/Subsidiary/Parent Company (Consolidated)",
+        "alias": "Parent Company (Consolidated)",
+        "valid": true,
+        "invalidDueToValidIntersection": false,
+        "oldName": "NSP_Total Subsidiary",
+        "dataStorage": "Dynamic Calc",
+        "dataType": "Unspecified",
+        "objectTypeId": 33,
+        "twoPass": false,
+        "generation": 2,
+        "objectType": "Entity"
+      }
+    ],
+    "level": 5,
+    "usedIn": [
+      "Custom",
+      "Report",
+      "NSP_NFS"
+    ],
+    "valid": true,
+    "invalidDueToValidIntersection": false,
+    "path": "/Subsidiary",
+    "displayPath": "/Subsidiary",
+    "aliasPath": "/Subsidiary",
+    "density": "Sparse",
+    "enforceSecurity": false,
+    "dimType": "Entity",
+    "dimName": "Subsidiary",
+    "objectTypeId": 2,
+    "evaluationOrder": 0,
+    "generation": 1,
+    "objectType": "Dimension",
+    "name": "Subsidiary",
+    "id": "c9128a93-7ffe-4c09-9fd3-3da31a38d73a"
+  },
+  "account": {
+    "links": [
+      {
+        "href": "https://epm-test-pubpeople01.epm.uk-cardiff-1.ocs.oraclecloud.com:443/HyperionPlanning/rest/v3/applications/NetSuite/plantypes/Custom/dimensions/Account",
+        "action": "GET",
+        "rel": "self"
+      }
+    ],
+    "children": [
+      {
+        "name": "Exchange Rates",
+        "path": "/Account/Exchange Rates",
+        "displayPath": "/Account/Exchange Rates",
+        "parentId": "0a065219-8fa3-4495-9e3e-18de82c69d56",
+        "id": "3a0f792a-9b3c-4c80-a00e-9272ca8020b9",
+        "children": [
+          {
+            "name": "FX Rates - Average",
+            "path": "/Account/Exchange Rates/FX Rates - Average",
+            "displayPath": "/Account/Exchange Rates/FX Rates - Average",
+            "parentId": "3a0f792a-9b3c-4c80-a00e-9272ca8020b9",
+            "id": "75436e82-dbb9-452e-9176-a1b6a4825cf6",
+            "dimName": "Account",
+            "parentName": "Exchange Rates",
+            "level": 0,
+            "usedIn": [
+              "Custom",
+              "Report",
+              "NSP_NFS"
+            ],
+            "aliasPath": "/Account/Exchange Rates/FX Rates - Average",
+            "valid": true,
+            "invalidDueToValidIntersection": false,
+            "udas": [
+              "HSP_NOLINK"
+            ],
+            "oldName": "FX Rates - Average",
+            "dataStorage": "Store Data",
+            "dataType": "Unspecified",
+            "objectTypeId": 32,
+            "twoPass": false,
+            "generation": 3,
+            "objectType": "Account"
+          },
+          {
+            "name": "FX Rates - Ending",
+            "path": "/Account/Exchange Rates/FX Rates - Ending",
+            "displayPath": "/Account/Exchange Rates/FX Rates - Ending",
+            "parentId": "3a0f792a-9b3c-4c80-a00e-9272ca8020b9",
+            "id": "8e154241-7663-4243-b126-33829f9791b1",
+            "dimName": "Account",
+            "parentName": "Exchange Rates",
+            "level": 0,
+            "usedIn": [
+              "Custom",
+              "Report",
+              "NSP_NFS"
+            ],
+            "aliasPath": "/Account/Exchange Rates/FX Rates - Ending",
+            "valid": true,
+            "invalidDueToValidIntersection": false,
+            "udas": [
+              "HSP_NOLINK"
+            ],
+            "oldName": "FX Rates - Ending",
+            "dataStorage": "Store Data",
+            "dataType": "Unspecified",
+            "objectTypeId": 32,
+            "twoPass": false,
+            "generation": 3,
+            "objectType": "Account"
+          }
+        ],
+        "dimName": "Account",
+        "parentName": "Account",
+        "level": 1,
+        "usedIn": [
+          "Custom",
+          "Report",
+          "NSP_NFS"
+        ],
+        "aliasPath": "/Account/Exchange Rates",
+        "valid": true,
+        "invalidDueToValidIntersection": false,
+        "oldName": "Exchange Rates",
+        "dataStorage": "Label Only",
+        "dataType": "Unspecified",
+        "objectTypeId": 32,
+        "twoPass": false,
+        "generation": 2,
+        "objectType": "Account"
+      },
+      {
+        "name": "Statistical Accounts For Non Financial KPIs and Granular Revenue",
+        "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue",
+        "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue",
+        "parentId": "0a065219-8fa3-4495-9e3e-18de82c69d56",
+        "id": "820d47e0-3e0d-434e-924d-12d8e007f2eb",
+        "children": [
+          {
+            "name": "Product Revenue",
+            "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue",
+            "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue",
+            "parentId": "820d47e0-3e0d-434e-924d-12d8e007f2eb",
+            "id": "888294e9-090e-40fb-a40d-6465808c0b38",
+            "children": [
+              {
+                "name": "Organic Revenue",
+                "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/Organic Revenue",
+                "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/Organic Revenue",
+                "parentId": "888294e9-090e-40fb-a40d-6465808c0b38",
+                "id": "a981bdda-d27b-4386-8912-af885f2094fa",
+                "children": [
+                  {
+                    "name": "P1.0",
+                    "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/Organic Revenue/P1.0",
+                    "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/Organic Revenue/P1.0",
+                    "parentId": "a981bdda-d27b-4386-8912-af885f2094fa",
+                    "id": "4ab25b4e-49cf-4e31-ad35-fb4d65579395",
+                    "dimName": "Account",
+                    "parentName": "Organic Revenue",
+                    "level": 0,
+                    "usedIn": [
+                      "Custom",
+                      "Report",
+                      "NSP_NFS"
+                    ],
+                    "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/Organic Revenue/Organic Revenue",
+                    "alias": "Organic Revenue",
+                    "valid": true,
+                    "invalidDueToValidIntersection": false,
+                    "udas": [
+                      "Hsp_Currency"
+                    ],
+                    "oldName": "P1.0",
+                    "dataStorage": "Store Data",
+                    "dataType": "Currency",
+                    "objectTypeId": 32,
+                    "twoPass": false,
+                    "generation": 5,
+                    "objectType": "Account"
+                  },
+                  {
+                    "name": "P1.1",
+                    "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/Organic Revenue/P1.1",
+                    "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/Organic Revenue/P1.1",
+                    "parentId": "a981bdda-d27b-4386-8912-af885f2094fa",
+                    "id": "737cd5e7-cb6c-4a2a-b397-b73061604722",
+                    "dimName": "Account",
+                    "parentName": "Organic Revenue",
+                    "level": 0,
+                    "usedIn": [
+                      "Custom",
+                      "Report",
+                      "NSP_NFS"
+                    ],
+                    "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/Organic Revenue/Organic Revenue - CPA",
+                    "alias": "Organic Revenue - CPA",
+                    "valid": true,
+                    "invalidDueToValidIntersection": false,
+                    "udas": [
+                      "Hsp_Currency"
+                    ],
+                    "oldName": "P1.1",
+                    "dataStorage": "Store Data",
+                    "dataType": "Currency",
+                    "objectTypeId": 32,
+                    "twoPass": false,
+                    "generation": 5,
+                    "objectType": "Account"
+                  },
+                  {
+                    "name": "P1.2",
+                    "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/Organic Revenue/P1.2",
+                    "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/Organic Revenue/P1.2",
+                    "parentId": "a981bdda-d27b-4386-8912-af885f2094fa",
+                    "id": "84874266-1d64-486b-b53e-da68296501d2",
+                    "dimName": "Account",
+                    "parentName": "Organic Revenue",
+                    "level": 0,
+                    "usedIn": [
+                      "Custom",
+                      "Report",
+                      "NSP_NFS"
+                    ],
+                    "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/Organic Revenue/Organic Revenue - REV SHARE",
+                    "alias": "Organic Revenue - REV SHARE",
+                    "valid": true,
+                    "invalidDueToValidIntersection": false,
+                    "udas": [
+                      "Hsp_Currency"
+                    ],
+                    "oldName": "P1.2",
+                    "dataStorage": "Store Data",
+                    "dataType": "Currency",
+                    "objectTypeId": 32,
+                    "twoPass": false,
+                    "generation": 5,
+                    "objectType": "Account"
+                  },
+                  {
+                    "name": "P1.3",
+                    "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/Organic Revenue/P1.3",
+                    "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/Organic Revenue/P1.3",
+                    "parentId": "a981bdda-d27b-4386-8912-af885f2094fa",
+                    "id": "ffed6aad-8d25-470a-bdf9-98e50fa93e6e",
+                    "dimName": "Account",
+                    "parentName": "Organic Revenue",
+                    "level": 0,
+                    "usedIn": [
+                      "Custom",
+                      "Report",
+                      "NSP_NFS"
+                    ],
+                    "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/Organic Revenue/Organic Revenue - FLAT FEE",
+                    "alias": "Organic Revenue - FLAT FEE",
+                    "valid": true,
+                    "invalidDueToValidIntersection": false,
+                    "udas": [
+                      "Hsp_Currency"
+                    ],
+                    "oldName": "P1.3",
+                    "dataStorage": "Store Data",
+                    "dataType": "Currency",
+                    "objectTypeId": 32,
+                    "twoPass": false,
+                    "generation": 5,
+                    "objectType": "Account"
+                  }
+                ],
+                "dimName": "Account",
+                "parentName": "Product Revenue",
+                "level": 1,
+                "usedIn": [
+                  "Custom",
+                  "Report",
+                  "NSP_NFS"
+                ],
+                "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/Organic Revenue",
+                "valid": true,
+                "invalidDueToValidIntersection": false,
+                "udas": [
+                  "Hsp_Currency"
+                ],
+                "oldName": "Organic Revenue",
+                "dataStorage": "Dynamic Calc",
+                "dataType": "Currency",
+                "objectTypeId": 32,
+                "twoPass": false,
+                "generation": 4,
+                "objectType": "Account"
+              },
+              {
+                "name": "PPC Revenue",
+                "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/PPC Revenue",
+                "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/PPC Revenue",
+                "parentId": "888294e9-090e-40fb-a40d-6465808c0b38",
+                "id": "08b9254d-307c-4508-9202-25fabec35ad5",
+                "children": [
+                  {
+                    "name": "P2.0",
+                    "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/PPC Revenue/P2.0",
+                    "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/PPC Revenue/P2.0",
+                    "parentId": "08b9254d-307c-4508-9202-25fabec35ad5",
+                    "id": "c0740955-4d01-4cec-9275-21f8dd64b503",
+                    "dimName": "Account",
+                    "parentName": "PPC Revenue",
+                    "level": 0,
+                    "usedIn": [
+                      "Custom",
+                      "Report",
+                      "NSP_NFS"
+                    ],
+                    "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/PPC Revenue/PPC Revenue",
+                    "alias": "PPC Revenue",
+                    "valid": true,
+                    "invalidDueToValidIntersection": false,
+                    "udas": [
+                      "Hsp_Currency"
+                    ],
+                    "oldName": "P2.0",
+                    "dataStorage": "Store Data",
+                    "dataType": "Currency",
+                    "objectTypeId": 32,
+                    "twoPass": false,
+                    "generation": 5,
+                    "objectType": "Account"
+                  },
+                  {
+                    "name": "P2.1",
+                    "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/PPC Revenue/P2.1",
+                    "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/PPC Revenue/P2.1",
+                    "parentId": "08b9254d-307c-4508-9202-25fabec35ad5",
+                    "id": "3bd53fca-558d-437c-93ca-016fa48bab94",
+                    "dimName": "Account",
+                    "parentName": "PPC Revenue",
+                    "level": 0,
+                    "usedIn": [
+                      "Custom",
+                      "Report",
+                      "NSP_NFS"
+                    ],
+                    "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/PPC Revenue/PPC Revenue - CPA",
+                    "alias": "PPC Revenue - CPA",
+                    "valid": true,
+                    "invalidDueToValidIntersection": false,
+                    "udas": [
+                      "Hsp_Currency"
+                    ],
+                    "oldName": "P2.1",
+                    "dataStorage": "Store Data",
+                    "dataType": "Currency",
+                    "objectTypeId": 32,
+                    "twoPass": false,
+                    "generation": 5,
+                    "objectType": "Account"
+                  },
+                  {
+                    "name": "P2.2",
+                    "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/PPC Revenue/P2.2",
+                    "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/PPC Revenue/P2.2",
+                    "parentId": "08b9254d-307c-4508-9202-25fabec35ad5",
+                    "id": "36574bc0-0a1a-46a2-89a9-c333245577b9",
+                    "dimName": "Account",
+                    "parentName": "PPC Revenue",
+                    "level": 0,
+                    "usedIn": [
+                      "Custom",
+                      "Report",
+                      "NSP_NFS"
+                    ],
+                    "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/PPC Revenue/PPC Revenue - REV SHARE",
+                    "alias": "PPC Revenue - REV SHARE",
+                    "valid": true,
+                    "invalidDueToValidIntersection": false,
+                    "udas": [
+                      "Hsp_Currency"
+                    ],
+                    "oldName": "P2.2",
+                    "dataStorage": "Store Data",
+                    "dataType": "Currency",
+                    "objectTypeId": 32,
+                    "twoPass": false,
+                    "generation": 5,
+                    "objectType": "Account"
+                  },
+                  {
+                    "name": "P2.3",
+                    "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/PPC Revenue/P2.3",
+                    "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/PPC Revenue/P2.3",
+                    "parentId": "08b9254d-307c-4508-9202-25fabec35ad5",
+                    "id": "5291523d-d378-45fe-9b87-f83b6c36d105",
+                    "dimName": "Account",
+                    "parentName": "PPC Revenue",
+                    "level": 0,
+                    "usedIn": [
+                      "Custom",
+                      "Report",
+                      "NSP_NFS"
+                    ],
+                    "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/PPC Revenue/PPC Revenue - FLAT FEE",
+                    "alias": "PPC Revenue - FLAT FEE",
+                    "valid": true,
+                    "invalidDueToValidIntersection": false,
+                    "udas": [
+                      "Hsp_Currency"
+                    ],
+                    "oldName": "P2.3",
+                    "dataStorage": "Store Data",
+                    "dataType": "Currency",
+                    "objectTypeId": 32,
+                    "twoPass": false,
+                    "generation": 5,
+                    "objectType": "Account"
+                  }
+                ],
+                "dimName": "Account",
+                "parentName": "Product Revenue",
+                "level": 1,
+                "usedIn": [
+                  "Custom",
+                  "Report",
+                  "NSP_NFS"
+                ],
+                "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue/PPC Revenue",
+                "valid": true,
+                "invalidDueToValidIntersection": false,
+                "udas": [
+                  "Hsp_Currency"
+                ],
+                "oldName": "PPC Revenue",
+                "dataStorage": "Dynamic Calc",
+                "dataType": "Currency",
+                "objectTypeId": 32,
+                "twoPass": false,
+                "generation": 4,
+                "objectType": "Account"
+              }
+            ],
+            "dimName": "Account",
+            "parentName": "Statistical Accounts For Non Financial KPIs and Granular Revenue",
+            "level": 2,
+            "usedIn": [
+              "Custom",
+              "Report",
+              "NSP_NFS"
+            ],
+            "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/Product Revenue",
+            "valid": true,
+            "invalidDueToValidIntersection": false,
+            "udas": [
+              "Hsp_Currency"
+            ],
+            "oldName": "Product Revenue",
+            "dataStorage": "Dynamic Calc",
+            "dataType": "Currency",
+            "objectTypeId": 32,
+            "twoPass": false,
+            "generation": 3,
+            "objectType": "Account"
+          },
+          {
+            "name": "New Depositing Customers",
+            "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/New Depositing Customers",
+            "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/New Depositing Customers",
+            "parentId": "820d47e0-3e0d-434e-924d-12d8e007f2eb",
+            "id": "29fbc909-66dc-40bc-b33f-738bb8683673",
+            "children": [
+              {
+                "name": "NDC_RS",
+                "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/New Depositing Customers/NDC_RS",
+                "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/New Depositing Customers/NDC_RS",
+                "parentId": "29fbc909-66dc-40bc-b33f-738bb8683673",
+                "id": "0d88e29b-eea3-40d0-bd75-9cfe76c915b9",
+                "dimName": "Account",
+                "parentName": "New Depositing Customers",
+                "level": 0,
+                "usedIn": [
+                  "Custom",
+                  "Report",
+                  "NSP_NFS"
+                ],
+                "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/New Depositing Customers/NDC Revenue Share",
+                "alias": "NDC Revenue Share",
+                "valid": true,
+                "invalidDueToValidIntersection": false,
+                "udas": [
+                  "Hsp_Currency",
+                  "HSP_NOLINK"
+                ],
+                "oldName": "NDC_RS",
+                "dataStorage": "Store Data",
+                "dataType": "Currency",
+                "objectTypeId": 32,
+                "twoPass": false,
+                "generation": 4,
+                "objectType": "Account"
+              },
+              {
+                "name": "NDC_CPA",
+                "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/New Depositing Customers/NDC_CPA",
+                "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/New Depositing Customers/NDC_CPA",
+                "parentId": "29fbc909-66dc-40bc-b33f-738bb8683673",
+                "id": "521ade74-635f-4788-a60a-241090e5decf",
+                "dimName": "Account",
+                "parentName": "New Depositing Customers",
+                "level": 0,
+                "usedIn": [
+                  "Custom",
+                  "Report",
+                  "NSP_NFS"
+                ],
+                "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/New Depositing Customers/NDC CPA",
+                "alias": "NDC CPA",
+                "valid": true,
+                "invalidDueToValidIntersection": false,
+                "udas": [
+                  "Hsp_Currency",
+                  "HSP_NOLINK"
+                ],
+                "oldName": "NDC_CPA",
+                "dataStorage": "Store Data",
+                "dataType": "Currency",
+                "objectTypeId": 32,
+                "twoPass": false,
+                "generation": 4,
+                "objectType": "Account"
+              }
+            ],
+            "dimName": "Account",
+            "parentName": "Statistical Accounts For Non Financial KPIs and Granular Revenue",
+            "level": 1,
+            "usedIn": [
+              "Custom",
+              "Report",
+              "NSP_NFS"
+            ],
+            "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/New Depositing Customers",
+            "valid": true,
+            "invalidDueToValidIntersection": false,
+            "udas": [
+              "Hsp_Currency"
+            ],
+            "oldName": "New Depositing Customers",
+            "dataStorage": "Dynamic Calc",
+            "dataType": "Currency",
+            "objectTypeId": 32,
+            "twoPass": false,
+            "generation": 3,
+            "objectType": "Account"
+          },
+          {
+            "name": "CAPEX Activity",
+            "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity",
+            "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity",
+            "parentId": "820d47e0-3e0d-434e-924d-12d8e007f2eb",
+            "id": "5ae6be2a-c685-4a77-b99b-ffc10f19b1ca",
+            "children": [
+              {
+                "name": "60030",
+                "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60030",
+                "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60030",
+                "parentId": "5ae6be2a-c685-4a77-b99b-ffc10f19b1ca",
+                "id": "dc5672da-e18e-4f3c-80cf-b37f88465148",
+                "dimName": "Account",
+                "parentName": "CAPEX Activity",
+                "level": 0,
+                "usedIn": [
+                  "Custom",
+                  "Report",
+                  "NSP_NFS"
+                ],
+                "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60030 - Leasehold Property - Cost",
+                "alias": "60030 - Leasehold Property - Cost",
+                "valid": true,
+                "invalidDueToValidIntersection": false,
+                "udas": [
+                  "Hsp_Currency",
+                  "HSP_NOLINK"
+                ],
+                "oldName": "60030",
+                "dataStorage": "Store Data",
+                "dataType": "Currency",
+                "objectTypeId": 32,
+                "twoPass": false,
+                "generation": 4,
+                "objectType": "Account"
+              },
+              {
+                "name": "60110",
+                "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60110",
+                "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60110",
+                "parentId": "5ae6be2a-c685-4a77-b99b-ffc10f19b1ca",
+                "id": "970051a2-5efd-4b49-8925-636cf386316f",
+                "dimName": "Account",
+                "parentName": "CAPEX Activity",
+                "level": 0,
+                "usedIn": [
+                  "Custom",
+                  "Report",
+                  "NSP_NFS"
+                ],
+                "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60110 - Computer Equipment - Cost",
+                "alias": "60110 - Computer Equipment - Cost",
+                "valid": true,
+                "invalidDueToValidIntersection": false,
+                "udas": [
+                  "Hsp_Currency",
+                  "HSP_NOLINK"
+                ],
+                "oldName": "60110",
+                "dataStorage": "Store Data",
+                "dataType": "Currency",
+                "objectTypeId": 32,
+                "twoPass": false,
+                "generation": 4,
+                "objectType": "Account"
+              },
+              {
+                "name": "60140",
+                "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60140",
+                "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60140",
+                "parentId": "5ae6be2a-c685-4a77-b99b-ffc10f19b1ca",
+                "id": "3a347392-b6c9-4ea4-ae0e-1fbd889d7dcc",
+                "dimName": "Account",
+                "parentName": "CAPEX Activity",
+                "level": 0,
+                "usedIn": [
+                  "Custom",
+                  "Report",
+                  "NSP_NFS"
+                ],
+                "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60140 - Motor Vehicles - Cost",
+                "alias": "60140 - Motor Vehicles - Cost",
+                "valid": true,
+                "invalidDueToValidIntersection": false,
+                "udas": [
+                  "Hsp_Currency"
+                ],
+                "oldName": "60140",
+                "dataStorage": "Store Data",
+                "dataType": "Currency",
+                "objectTypeId": 32,
+                "twoPass": false,
+                "generation": 4,
+                "objectType": "Account"
+              },
+              {
+                "name": "60210",
+                "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60210",
+                "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60210",
+                "parentId": "5ae6be2a-c685-4a77-b99b-ffc10f19b1ca",
+                "id": "edb3141b-d0e0-48f8-a1d4-1df1536ebb84",
+                "dimName": "Account",
+                "parentName": "CAPEX Activity",
+                "level": 0,
+                "usedIn": [
+                  "Custom",
+                  "Report",
+                  "NSP_NFS"
+                ],
+                "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60210 - Office Equipment - Cost",
+                "alias": "60210 - Office Equipment - Cost",
+                "valid": true,
+                "invalidDueToValidIntersection": false,
+                "udas": [
+                  "Hsp_Currency"
+                ],
+                "oldName": "60210",
+                "dataStorage": "Store Data",
+                "dataType": "Currency",
+                "objectTypeId": 32,
+                "twoPass": false,
+                "generation": 4,
+                "objectType": "Account"
+              },
+              {
+                "name": "60230",
+                "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60230",
+                "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60230",
+                "parentId": "5ae6be2a-c685-4a77-b99b-ffc10f19b1ca",
+                "id": "8d5686a9-7443-4036-b683-bd66a8488a06",
+                "dimName": "Account",
+                "parentName": "CAPEX Activity",
+                "level": 0,
+                "usedIn": [
+                  "Custom",
+                  "Report",
+                  "NSP_NFS"
+                ],
+                "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60230 - Office Furniture - Cost",
+                "alias": "60230 - Office Furniture - Cost",
+                "valid": true,
+                "invalidDueToValidIntersection": false,
+                "udas": [
+                  "Hsp_Currency",
+                  "HSP_NOLINK"
+                ],
+                "oldName": "60230",
+                "dataStorage": "Store Data",
+                "dataType": "Currency",
+                "objectTypeId": 32,
+                "twoPass": false,
+                "generation": 4,
+                "objectType": "Account"
+              },
+              {
+                "name": "60410",
+                "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60410",
+                "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60410",
+                "parentId": "5ae6be2a-c685-4a77-b99b-ffc10f19b1ca",
+                "id": "a026aef3-aceb-4be5-871e-2af27966102f",
+                "dimName": "Account",
+                "parentName": "CAPEX Activity",
+                "level": 0,
+                "usedIn": [
+                  "Custom",
+                  "Report",
+                  "NSP_NFS"
+                ],
+                "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60410 - Player Database - Cost",
+                "alias": "60410 - Player Database - Cost",
+                "valid": true,
+                "invalidDueToValidIntersection": false,
+                "udas": [
+                  "Hsp_Currency"
+                ],
+                "oldName": "60410",
+                "dataStorage": "Store Data",
+                "dataType": "Currency",
+                "objectTypeId": 32,
+                "twoPass": false,
+                "generation": 4,
+                "objectType": "Account"
+              },
+              {
+                "name": "60430",
+                "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60430",
+                "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60430",
+                "parentId": "5ae6be2a-c685-4a77-b99b-ffc10f19b1ca",
+                "id": "4c56be17-680a-4c3d-9387-4895ad590264",
+                "dimName": "Account",
+                "parentName": "CAPEX Activity",
+                "level": 0,
+                "usedIn": [
+                  "Custom",
+                  "Report",
+                  "NSP_NFS"
+                ],
+                "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60430 - Websites - Cost",
+                "alias": "60430 - Websites - Cost",
+                "valid": true,
+                "invalidDueToValidIntersection": false,
+                "udas": [
+                  "Hsp_Currency",
+                  "HSP_NOLINK"
+                ],
+                "oldName": "60430",
+                "dataStorage": "Store Data",
+                "dataType": "Currency",
+                "objectTypeId": 32,
+                "twoPass": false,
+                "generation": 4,
+                "objectType": "Account"
+              },
+              {
+                "name": "60431",
+                "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60431",
+                "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60431",
+                "parentId": "5ae6be2a-c685-4a77-b99b-ffc10f19b1ca",
+                "id": "d44fc1d8-3461-428e-bac7-c49782df94d5",
+                "dimName": "Account",
+                "parentName": "CAPEX Activity",
+                "level": 0,
+                "usedIn": [
+                  "Custom",
+                  "Report",
+                  "NSP_NFS"
+                ],
+                "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60431 - Website Capex Adjustments",
+                "alias": "60431 - Website Capex Adjustments",
+                "valid": true,
+                "invalidDueToValidIntersection": false,
+                "udas": [
+                  "Hsp_Currency"
+                ],
+                "oldName": "60431",
+                "dataStorage": "Store Data",
+                "dataType": "Currency",
+                "objectTypeId": 32,
+                "twoPass": false,
+                "generation": 4,
+                "objectType": "Account"
+              },
+              {
+                "name": "60510",
+                "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60510",
+                "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60510",
+                "parentId": "5ae6be2a-c685-4a77-b99b-ffc10f19b1ca",
+                "id": "eff16b3c-c1f2-42a4-883b-e56c60e87af1",
+                "dimName": "Account",
+                "parentName": "CAPEX Activity",
+                "level": 0,
+                "usedIn": [
+                  "Custom",
+                  "Report",
+                  "NSP_NFS"
+                ],
+                "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60510 - Computer Software - Cost",
+                "alias": "60510 - Computer Software - Cost",
+                "valid": true,
+                "invalidDueToValidIntersection": false,
+                "udas": [
+                  "Hsp_Currency"
+                ],
+                "oldName": "60510",
+                "dataStorage": "Store Data",
+                "dataType": "Currency",
+                "objectTypeId": 32,
+                "twoPass": false,
+                "generation": 4,
+                "objectType": "Account"
+              },
+              {
+                "name": "60610",
+                "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60610",
+                "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60610",
+                "parentId": "5ae6be2a-c685-4a77-b99b-ffc10f19b1ca",
+                "id": "658d32a9-3bc9-4947-8e46-e47b84920039",
+                "dimName": "Account",
+                "parentName": "CAPEX Activity",
+                "level": 0,
+                "usedIn": [
+                  "Custom",
+                  "Report",
+                  "NSP_NFS"
+                ],
+                "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60610 - Domains - Cost",
+                "alias": "60610 - Domains - Cost",
+                "valid": true,
+                "invalidDueToValidIntersection": false,
+                "udas": [
+                  "Hsp_Currency"
+                ],
+                "oldName": "60610",
+                "dataStorage": "Store Data",
+                "dataType": "Currency",
+                "objectTypeId": 32,
+                "twoPass": false,
+                "generation": 4,
+                "objectType": "Account"
+              },
+              {
+                "name": "60810",
+                "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60810",
+                "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60810",
+                "parentId": "5ae6be2a-c685-4a77-b99b-ffc10f19b1ca",
+                "id": "13d9dea3-11d4-4ec6-b3b5-1b57c6bbe0b4",
+                "dimName": "Account",
+                "parentName": "CAPEX Activity",
+                "level": 0,
+                "usedIn": [
+                  "Custom",
+                  "Report",
+                  "NSP_NFS"
+                ],
+                "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60810 - Outsourced Development - Cost",
+                "alias": "60810 - Outsourced Development - Cost",
+                "valid": true,
+                "invalidDueToValidIntersection": false,
+                "udas": [
+                  "Hsp_Currency",
+                  "HSP_NOLINK"
+                ],
+                "oldName": "60810",
+                "dataStorage": "Store Data",
+                "dataType": "Currency",
+                "objectTypeId": 32,
+                "twoPass": false,
+                "generation": 4,
+                "objectType": "Account"
+              },
+              {
+                "name": "60830",
+                "path": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60830",
+                "displayPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60830",
+                "parentId": "5ae6be2a-c685-4a77-b99b-ffc10f19b1ca",
+                "id": "f0f2935c-8d44-4f18-bc10-a75f05a31a9d",
+                "dimName": "Account",
+                "parentName": "CAPEX Activity",
+                "level": 0,
+                "usedIn": [
+                  "Custom",
+                  "Report",
+                  "NSP_NFS"
+                ],
+                "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity/60830 - Internal Development - Cost",
+                "alias": "60830 - Internal Development - Cost",
+                "valid": true,
+                "invalidDueToValidIntersection": false,
+                "udas": [
+                  "Hsp_Currency",
+                  "HSP_NOLINK"
+                ],
+                "oldName": "60830",
+                "dataStorage": "Store Data",
+                "dataType": "Currency",
+                "objectTypeId": 32,
+                "twoPass": false,
+                "generation": 4,
+                "objectType": "Account"
+              }
+            ],
+            "dimName": "Account",
+            "parentName": "Statistical Accounts For Non Financial KPIs and Granular Revenue",
+            "level": 1,
+            "usedIn": [
+              "Custom",
+              "Report",
+              "NSP_NFS"
+            ],
+            "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue/CAPEX Activity",
+            "valid": true,
+            "invalidDueToValidIntersection": false,
+            "udas": [
+              "Hsp_Currency"
+            ],
+            "oldName": "CAPEX Activity",
+            "dataStorage": "Dynamic Calc",
+            "dataType": "Currency",
+            "objectTypeId": 32,
+            "twoPass": false,
+            "generation": 3,
+            "objectType": "Account"
+          }
+        ],
+        "dimName": "Account",
+        "parentName": "Account",
+        "level": 3,
+        "usedIn": [
+          "Custom",
+          "Report",
+          "NSP_NFS"
+        ],
+        "aliasPath": "/Account/Statistical Accounts For Non Financial KPIs and Granular Revenue",
+        "valid": true,
+        "invalidDueToValidIntersection": false,
+        "udas": [
+          "Hsp_Currency"
+        ],
+        "oldName": "Statistical Accounts For Non Financial KPIs and Granular Revenue",
+        "dataStorage": "Never Share",
+        "dataType": "Currency",
+        "objectTypeId": 32,
+        "twoPass": false,
+        "generation": 2,
+        "objectType": "Account"
+      },
+      {
+        "name": "IS Drivers",
+        "path": "/Account/IS Drivers",
+        "displayPath": "/Account/IS Drivers",
+        "parentId": "0a065219-8fa3-4495-9e3e-18de82c69d56",
+        "id": "ad164319-545d-406b-b0e5-c0d0df7b05e6",
+        "dimName": "Account",
+        "parentName": "Account",
+        "level": 0,
+        "usedIn": [
+          "Custom",
+          "Report",
+          "NSP_NFS"
+        ],
+        "aliasPath": "/Account/IS Drivers",
+        "valid": true,
+        "invalidDueToValidIntersection": false,
+        "udas": [
+          "Hsp_Currency"
+        ],
+        "oldName": "IS Drivers",
+        "dataStorage": "Never Share",
+        "dataType": "Currency",
+        "objectTypeId": 32,
+        "twoPass": false,
+        "generation": 2,
+        "objectType": "Account"
+      },
+      {
+        "name": "BS Drivers",
+        "path": "/Account/BS Drivers",
+        "displayPath": "/Account/BS Drivers",
+        "parentId": "0a065219-8fa3-4495-9e3e-18de82c69d56",
+        "id": "ffa78077-045f-4dde-9c4a-04ef6db18d1b",
+        "children": [
+          {
+            "name": "Income for BS",
+            "path": "/Account/BS Drivers/Income for BS",
+            "displayPath": "/Account/BS Drivers/Income for BS",
+            "parentId": "ffa78077-045f-4dde-9c4a-04ef6db18d1b",
+            "id": "3db84c8f-77c5-4c2b-83ba-1792801ef7d4",
+            "dimName": "Account",
+            "parentName": "BS Drivers",
+            "level": 0,
+            "usedIn": [
+              "Custom",
+              "Report",
+              "NSP_NFS"
+            ],
+            "aliasPath": "/Account/BS Drivers/Income for BS",
+            "valid": true,
+            "invalidDueToValidIntersection": false,
+            "udas": [
+              "Hsp_Currency",
+              "HSP_NOLINK"
+            ],
+            "oldName": "Income for BS",
+            "dataStorage": "Never Share",
+            "dataType": "Currency",
+            "objectTypeId": 32,
+            "twoPass": false,
+            "generation": 3,
+            "objectType": "Account"
+          },
+          {
+            "name": "First Months Sales Collection pct",
+            "path": "/Account/BS Drivers/First Months Sales Collection pct",
+            "displayPath": "/Account/BS Drivers/First Months Sales Collection pct",
+            "parentId": "ffa78077-045f-4dde-9c4a-04ef6db18d1b",
+            "id": "95183125-f3f6-4e2b-a81a-e1dcce61dd49",
+            "dimName": "Account",
+            "parentName": "BS Drivers",
+            "level": 0,
+            "usedIn": [
+              "Custom",
+              "Report",
+              "NSP_NFS"
+            ],
+            "aliasPath": "/Account/BS Drivers/First Months Sales Collection %",
+            "alias": "First Months Sales Collection %",
+            "valid": true,
+            "invalidDueToValidIntersection": false,
+            "udas": [
+              "HSP_NOLINK"
+            ],
+            "oldName": "First Months Sales Collection pct",
+            "dataStorage": "Never Share",
+            "dataType": "Percentage",
+            "objectTypeId": 32,
+            "twoPass": false,
+            "generation": 3,
+            "objectType": "Account"
+          },
+          {
+            "name": "Second Month Sales Collection pct",
+            "path": "/Account/BS Drivers/Second Month Sales Collection pct",
+            "displayPath": "/Account/BS Drivers/Second Month Sales Collection pct",
+            "parentId": "ffa78077-045f-4dde-9c4a-04ef6db18d1b",
+            "id": "7ace9e69-098d-4ae9-9234-1698522fdc24",
+            "dimName": "Account",
+            "parentName": "BS Drivers",
+            "level": 0,
+            "usedIn": [
+              "Custom",
+              "Report",
+              "NSP_NFS"
+            ],
+            "aliasPath": "/Account/BS Drivers/Second Month Sales Collection %",
+            "alias": "Second Month Sales Collection %",
+            "valid": true,
+            "invalidDueToValidIntersection": false,
+            "udas": [
+              "HSP_NOLINK"
+            ],
+            "oldName": "Second Month Sales Collection pct",
+            "dataStorage": "Never Share",
+            "dataType": "Percentage",
+            "objectTypeId": 32,
+            "twoPass": false,
+            "generation": 3,
+            "objectType": "Account"
+          },
+          {
+            "name": "Total Collection Movement",
+            "path": "/Account/BS Drivers/Total Collection Movement",
+            "displayPath": "/Account/BS Drivers/Total Collection Movement",
+            "parentId": "ffa78077-045f-4dde-9c4a-04ef6db18d1b",
+            "id": "b340bc40-4e95-4ace-bb20-931707f1b576",
+            "children": [
+              {
+                "name": "Collection Adjustment",
+                "path": "/Account/BS Drivers/Total Collection Movement/Collection Adjustment",
+                "displayPath": "/Account/BS Drivers/Total Collection Movement/Collection Adjustment",
+                "parentId": "b340bc40-4e95-4ace-bb20-931707f1b576",
+                "id": "e2be34b1-fd05-498d-a0a6-cfe8c20dae88",
+                "dimName": "Account",
+                "parentName": "Total Collection Movement",
+                "level": 0,
+                "usedIn": [
+                  "Custom",
+                  "Report",
+                  "NSP_NFS"
+                ],
+                "aliasPath": "/Account/BS Drivers/Total Collection Movement/Collection Adjustment",
+                "valid": true,
+                "invalidDueToValidIntersection": false,
+                "udas": [
+                  "Hsp_Currency",
+                  "HSP_NOLINK"
+                ],
+                "oldName": "Collection Adjustment",
+                "dataStorage": "Never Share",
+                "dataType": "Currency",
+                "objectTypeId": 32,
+                "twoPass": false,
+                "generation": 4,
+                "objectType": "Account"
+              }
+            ],
+            "dimName": "Account",
+            "parentName": "BS Drivers",
+            "level": 1,
+            "usedIn": [
+              "Custom",
+              "Report",
+              "NSP_NFS"
+            ],
+            "aliasPath": "/Account/BS Drivers/Total Collection Movement",
+            "valid": true,
+            "invalidDueToValidIntersection": false,
+            "udas": [
+              "Hsp_Currency"
+            ],
+            "oldName": "Total Collection Movement",
+            "dataStorage": "Dynamic Calc",
+            "dataType": "Currency",
+            "objectTypeId": 32,
+            "twoPass": false,
+            "generation": 3,
+            "objectType": "Account"
+          }
+        ],
+        "dimName": "Account",
+        "parentName": "Account",
+        "level": 2,
+        "usedIn": [
+          "Custom",
+          "Report",
+          "NSP_NFS"
+        ],
+        "aliasPath": "/Account/BS Drivers",
+        "valid": true,
+        "invalidDueToValidIntersection": false,
+        "udas": [
+          "Hsp_Currency"
+        ],
+        "oldName": "BS Drivers",
+        "dataStorage": "Label Only",
+        "dataType": "Currency",
+        "objectTypeId": 32,
+        "twoPass": false,
+        "generation": 2,
+        "objectType": "Account"
+      }
+    ],
+    "level": 4,
+    "usedIn": [
+      "Custom",
+      "Report",
+      "NSP_NFS"
+    ],
+    "valid": true,
+    "invalidDueToValidIntersection": false,
+    "path": "/Account",
+    "displayPath": "/Account",
+    "aliasPath": "/Account",
+    "density": "Dense",
+    "enforceSecurity": true,
+    "dimType": "Account",
+    "dimName": "Account",
+    "objectTypeId": 2,
+    "evaluationOrder": 0,
+    "generation": 1,
+    "objectType": "Dimension",
+    "name": "Account",
+    "id": "0a065219-8fa3-4495-9e3e-18de82c69d56"
+  }
+}

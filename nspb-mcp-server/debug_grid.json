@@ -1,0 +1,88 @@
+{
+  "planType": "NSP_NFS",
+  "grid": {
+    "pov": {
+      "dimensions": [
+        "Years",
+        "Scenario",
+        "Subsidiary",
+        "Region",
+        "Location",
+        "Relationship",
+        "Tracker",
+        "Currency",
+        "Department",
+        "Class",
+        "Vertical",
+        "Version"
+      ],
+      "members": [
+        [
+          "FY25"
+        ],
+        [
+          "Actual"
+        ],
+        [
+          "NSP_Total Subsidiary"
+        ],
+        [
+          "Total Region"
+        ],
+        [
+          "NSP_Total Location"
+        ],
+        [
+          "NSP_Total Relationship"
+        ],
+        [
+          "NSP_Amount"
+        ],
+        [
+          "EUR_Reporting"
+        ],
+        [
+          "TD"
+        ],
+        [
+          "TC"
+        ],
+        [
+          "TV"
+        ],
+        [
+          "NSP_Base"
+        ]
+      ]
+    },
+    "columns": [
+      {
+        "dimensions": [
+          "Period"
+        ],
+        "members": [
+          [
+            "Oct",
+            "Nov",
+            "Dec"
+          ]
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "dimensions": [
+          "Account"
+        ],
+        "members": [
+          [
+            "NFS_Income",
+            "Gross Profit"
+          ]
+        ]
+      }
+    ],
+    "suppressMissingRows": true,
+    "suppressMissingColumns": true
+  }
+}

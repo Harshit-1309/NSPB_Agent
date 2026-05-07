@@ -1,0 +1,521 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   SegmentOverviewReport.css
+   Oracle Smart View–style financial dashboard styling
+───────────────────────────────────────────────────────────────────────────── */
+
+/* Wrapper */
+.so-wrapper {
+  font-family: 'Inter', 'Calibri', system-ui, -apple-system, sans-serif;
+  font-size: 12px;
+  background: var(--table-bg, #fff);
+  color: var(--text-main, #0f172a);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border-color, #e2e8f0);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  margin-top: 8px;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────────── */
+.so-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: #fff;
+  gap: 12px;
+}
+
+.so-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.so-badge {
+  background: #6366f1;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.so-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f8fafc;
+  letter-spacing: 0.02em;
+}
+
+.so-refreshing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #94a3b8;
+  animation: fadeIn 0.2s ease;
+}
+
+.so-export-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.so-export-btn:hover {
+  background: white;
+  color: #1e293b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* ── Error banner ──────────────────────────────────────────────────────────── */
+.so-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #fef2f2;
+  border-bottom: 1px solid #fecaca;
+  color: #dc2626;
+  font-size: 11px;
+}
+
+/* ── Filters ─────────────────────────────────────────────────────────────────── */
+.so-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  background: var(--table-header, #f8fafc);
+  flex-wrap: wrap;
+}
+
+.so-filter-wrap {
+  position: relative;
+}
+
+.so-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 10px;
+  background: var(--table-bg, #fff);
+  color: var(--text-main, #0f172a);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.so-filter-btn:hover {
+  border-color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.05);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(139, 92, 246, 0.1);
+}
+
+.so-filter-dim {
+  font-weight: 700;
+  color: #6366f1;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.so-filter-val {
+  font-weight: 500;
+  color: var(--text-main, #0f172a);
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.so-chevron {
+  color: #94a3b8;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.so-chevron.open {
+  transform: rotate(180deg);
+}
+
+.so-filter-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 240px;
+  max-width: 320px;
+  background: var(--table-bg, #fff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  z-index: 200;
+  animation: slideDown 0.15s ease;
+  overflow: hidden;
+}
+
+.so-filter-search {
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  font-size: 11px;
+  font-family: inherit;
+  color: var(--text-main, #0f172a);
+  background: var(--input-bg, #f8fafc);
+  outline: none;
+}
+
+.so-filter-list {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.so-filter-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 12px;
+  cursor: pointer;
+  transition: background 0.1s;
+  gap: 8px;
+}
+
+.so-filter-item:hover,
+.so-filter-item.selected {
+  background: #f5f3ff;
+}
+
+.so-filter-item.selected .so-filter-item-name {
+  color: #6366f1;
+  font-weight: 600;
+}
+
+.so-filter-item-name {
+  font-size: 11px;
+  color: var(--text-main, #0f172a);
+  flex: 1;
+}
+
+.so-filter-item-code {
+  font-size: 9px;
+  color: #94a3b8;
+  font-family: monospace;
+  flex-shrink: 0;
+}
+
+.so-filter-loading,
+.so-filter-empty {
+  padding: 12px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* ── Table ─────────────────────────────────────────────────────────────────── */
+.so-table-scroll {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 600px;
+  transition: opacity 0.2s ease;
+}
+
+.so-table-scroll.blurred {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.so-table {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.so-col-label {
+  width: 200px;
+  min-width: 170px;
+}
+
+.so-col-num {
+  width: 72px;
+  min-width: 60px;
+}
+
+.so-col-gap {
+  width: 14px;
+}
+
+/* ── Column Headers ─────────────────────────────────────────────────────────── */
+.so-block-header th,
+.so-col-header th {
+  position: sticky;
+  top: 0;
+  background: #1e293b;
+  color: #f8fafc;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  padding: 6px 4px;
+  border-right: 1px solid #334155;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.so-th-label {
+  background: #1e293b !important;
+  text-align: left !important;
+  padding-left: 12px !important;
+}
+
+.so-th-gap {
+  background: #0f172a !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+.so-block-title {
+  background: #334155 !important;
+  font-size: 11px !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 2px solid #6366f1 !important;
+}
+
+.so-col-header th {
+  background: #1e293b !important;
+  font-size: 9.5px !important;
+  font-weight: 600 !important;
+  top: 30px;
+}
+
+.so-var-col {
+  color: #94a3b8 !important;
+}
+
+.so-gap-cell {
+  background: var(--table-border, #e2e8f0);
+  padding: 0;
+  width: 12px;
+}
+
+/* ── Rows ─────────────────────────────────────────────────────────────────── */
+.so-row {
+  border-bottom: 1px solid var(--table-border, #e2e8f0);
+  transition: background 0.1s;
+}
+
+.so-row:hover {
+  background: rgba(99, 102, 241, 0.04);
+}
+
+/* Section/parent rows */
+.so-row-section {
+  background: var(--table-header, #f8fafc) !important;
+}
+
+.so-row-section .so-row-label {
+  font-weight: 700;
+  font-size: 11.5px;
+}
+
+.dark-mode .so-row-section {
+  background: #1a2035 !important;
+}
+
+.so-row-parent .so-row-label {
+  font-weight: 600;
+}
+
+.so-row-child .so-row-label {
+  font-weight: 400;
+  color: var(--text-secondary, #475569);
+}
+
+.so-row-pct {
+  background: rgba(99, 102, 241, 0.03) !important;
+}
+
+.so-row-pct .so-row-label {
+  font-style: italic;
+  font-size: 10.5px;
+  color: #6366f1;
+}
+
+/* Account label cell */
+.so-row-label {
+  font-size: 11px;
+  color: var(--text-main, #0f172a);
+  padding: 5px 8px 5px 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: sticky;
+  left: 0;
+  background: inherit;
+  z-index: 5;
+  border-right: 1px solid var(--border-color, #e2e8f0);
+}
+
+/* Number cells */
+.so-cell {
+  text-align: right;
+  padding: 5px 8px 5px 4px;
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: var(--text-main, #0f172a);
+  white-space: nowrap;
+}
+
+.so-cell.neg {
+  color: #dc2626 !important;
+  font-weight: 500;
+}
+
+.so-cell.variance {
+  color: var(--text-secondary, #475569);
+}
+
+.so-cell.variance.neg {
+  color: #dc2626 !important;
+}
+
+/* ── POV Footer ─────────────────────────────────────────────────────────────── */
+.so-pov-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--border-color, #e2e8f0);
+  background: var(--table-header, #f8fafc);
+  flex-wrap: wrap;
+  overflow-x: auto;
+}
+
+.so-pov-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.so-pov-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.so-pov-dim {
+  font-weight: 700;
+  color: #6366f1;
+}
+
+.so-pov-val {
+  color: var(--text-secondary, #475569);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Animations ─────────────────────────────────────────────────────────────── */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+
+/* ── Dark mode overrides ────────────────────────────────────────────────────── */
+.dark-mode .so-wrapper {
+  border-color: #2e3245;
+}
+
+.dark-mode .so-row-label {
+  background: var(--table-bg, #1e2130);
+}
+
+.dark-mode .so-row:hover {
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.dark-mode .so-filter-btn {
+  background: #1e2130;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+.dark-mode .so-filter-btn:hover {
+  background: #252a40;
+  border-color: #6366f1;
+}
+
+.dark-mode .so-filter-panel {
+  background: #1e2130;
+  border-color: #334155;
+}
+
+.dark-mode .so-filter-search {
+  background: #252a40;
+  color: #f8fafc;
+  border-bottom-color: #334155;
+}
+
+.dark-mode .so-filter-item:hover,
+.dark-mode .so-filter-item.selected {
+  background: #252a40;
+}
+
+.dark-mode .so-pov-footer,
+.dark-mode .so-filters {
+  background: #1a1f33;
+  border-color: #2e3245;
+}
+
+.dark-mode .so-gap-cell {
+  background: #2e3245;
+}
+
+.dark-mode .so-error {
+  background: #2d1515;
+  border-color: #7f1d1d;
+  color: #fca5a5;
+}

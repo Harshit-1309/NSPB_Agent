@@ -1,0 +1,5 @@
+{
+  "rows": "[\"NFS_Income\", \"NFS_Cost of Sales\", \"NFS_Expense\"]",
+  "columns": "[\"Oct\", \"Nov\", \"Dec\"]",
+  "pov": "[\"FY25\"]"
+}
