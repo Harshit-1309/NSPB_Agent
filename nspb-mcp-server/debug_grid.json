@@ -3,34 +3,22 @@
   "grid": {
     "pov": {
       "dimensions": [
-        "Account",
-        "Currency",
-        "Version",
         "Subsidiary",
-        "Years",
+        "Region",
         "Location",
         "Relationship",
         "Tracker",
+        "Currency",
         "Department",
         "Class",
-        "Vertical",
-        "Scenario"
+        "Version"
       ],
       "members": [
-        [
-          "NFS_Income"
-        ],
-        [
-          "EUR_Reporting"
-        ],
-        [
-          "NSP_Base"
-        ],
         [
           "NSP_Total Subsidiary"
         ],
         [
-          "FY25"
+          "Total Region"
         ],
         [
           "NSP_Total Location"
@@ -42,26 +30,47 @@
           "NSP_Amount"
         ],
         [
+          "EUR_Reporting"
+        ],
+        [
           "TD"
         ],
         [
           "TC"
         ],
         [
-          "TV"
-        ],
-        [
-          "NSP_Actual"
+          "NSP_Base"
         ]
       ]
     },
     "columns": [
       {
         "dimensions": [
+          "Scenario",
+          "Years",
           "Period"
         ],
         "members": [
           [
+            "NSP_Actual",
+            "NSP_Forecast",
+            "NSP_Budget"
+          ],
+          [
+            "FY25",
+            "FY24"
+          ],
+          [
+            "TP11",
+            "TP1",
+            "TP2",
+            "TP3",
+            "TP4",
+            "TP5",
+            "TP6",
+            "TP7",
+            "TP8",
+            "TP9",
             "TP10"
           ]
         ]
@@ -70,16 +79,160 @@
     "rows": [
       {
         "dimensions": [
-          "Region"
+          "Account",
+          "Vertical"
         ],
         "members": [
           [
-            "ILvl0Descendants(\"Total Region\")"
+            "REVENUES"
+          ],
+          [
+            "S2.1 - REGULATED CASINO"
+          ]
+        ]
+      },
+      {
+        "dimensions": [
+          "Account",
+          "Vertical"
+        ],
+        "members": [
+          [
+            "REVENUES"
+          ],
+          [
+            "V7"
+          ]
+        ]
+      },
+      {
+        "dimensions": [
+          "Account",
+          "Vertical"
+        ],
+        "members": [
+          [
+            "REVENUES"
+          ],
+          [
+            "S2.2 - OTHER CASINO"
+          ]
+        ]
+      },
+      {
+        "dimensions": [
+          "Account",
+          "Vertical"
+        ],
+        "members": [
+          [
+            "REVENUES"
+          ],
+          [
+            "S1 - TOTAL SPORT"
+          ]
+        ]
+      },
+      {
+        "dimensions": [
+          "Account",
+          "Vertical"
+        ],
+        "members": [
+          [
+            "Direct costs"
+          ],
+          [
+            "Total Vertical"
+          ]
+        ]
+      },
+      {
+        "dimensions": [
+          "Account",
+          "Vertical"
+        ],
+        "members": [
+          [
+            "Product"
+          ],
+          [
+            "Total Vertical"
+          ]
+        ]
+      },
+      {
+        "dimensions": [
+          "Account",
+          "Vertical"
+        ],
+        "members": [
+          [
+            "Tech."
+          ],
+          [
+            "Total Vertical"
+          ]
+        ]
+      },
+      {
+        "dimensions": [
+          "Account",
+          "Vertical"
+        ],
+        "members": [
+          [
+            "Finance & Legal"
+          ],
+          [
+            "Total Vertical"
+          ]
+        ]
+      },
+      {
+        "dimensions": [
+          "Account",
+          "Vertical"
+        ],
+        "members": [
+          [
+            "Other"
+          ],
+          [
+            "Total Vertical"
+          ]
+        ]
+      },
+      {
+        "dimensions": [
+          "Account",
+          "Vertical"
+        ],
+        "members": [
+          [
+            "Other Operating Expenses"
+          ],
+          [
+            "Total Vertical"
+          ]
+        ]
+      },
+      {
+        "dimensions": [
+          "Account",
+          "Vertical"
+        ],
+        "members": [
+          [
+            "CAPEX Activity"
+          ],
+          [
+            "Total Vertical"
           ]
         ]
       }
     ],
-    "suppressMissingRows": true,
-    "suppressMissingColumns": true
+    "suppressMissingRows": false,
+    "suppressMissingColumns": false
   }
 }

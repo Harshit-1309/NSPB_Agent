@@ -519,3 +519,79 @@
   border-color: #7f1d1d;
   color: #fca5a5;
 }
+
+/* ── Responsive Design ─────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .so-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .so-header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .so-filters {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .so-filter-btn {
+    padding: 5px 10px;
+  }
+
+  .so-filter-val {
+    max-width: 120px;
+  }
+
+  .so-col-label {
+    width: 140px;
+    min-width: 130px;
+  }
+
+  .so-row-label {
+    font-size: 10.5px;
+  }
+
+  .so-cell {
+    font-size: 10px;
+    padding: 4px 6px;
+  }
+
+  .so-block-title {
+    font-size: 10px !important;
+  }
+
+  .so-col-header th {
+    font-size: 8.5px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .so-header {
+    padding: 12px;
+  }
+
+  .so-title {
+    font-size: 13px;
+  }
+
+  .so-filters {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .so-filter-val {
+    max-width: none;
+  }
+
+  .so-row-label {
+    width: 110px;
+    min-width: 100px;
+    font-size: 10px;
+  }
+}
