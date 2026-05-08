@@ -99,8 +99,8 @@ const normalizeMember = (m: string, dim: string): string => {
   // Period normalization (Common Aliases -> Technical TP Codes)
   if (dim === 'Period') {
     const periodMap: Record<string, string> = {
-      'jan': 'TP01', 'feb': 'TP02', 'mar': 'TP03', 'apr': 'TP04', 'may': 'TP05', 'jun': 'TP06',
-      'jul': 'TP07', 'aug': 'TP08', 'sep': 'TP09', 'oct': 'TP10', 'nov': 'TP11', 'dec': 'TP12',
+      'jan': 'Jan', 'feb': 'Feb', 'mar': 'Mar', 'apr': 'Apr', 'may': 'May', 'jun': 'Jun',
+      'jul': 'Jul', 'aug': 'Aug', 'sep': 'Sep', 'oct': 'Oct', 'nov': 'Nov', 'dec': 'Dec',
       'yeartotal': 'YearTotal', 'begbalance': 'BegBalance'
     };
     if (periodMap[lower]) return periodMap[lower];
@@ -190,8 +190,14 @@ export const exportDataSlice = async (rawArgs: any) => {
             explicitDim = parts[0].trim();
             m = parts.slice(1).join(':').trim(); // support ILvl0Descendants(...) as member
           }
-          const dim = sanitizeDimName(explicitDim || resolveDim(m));
-          if (dim === 'Unknown') return; // prevent Oracle 400 errors if dimension is completely unmappable
+          let dim = sanitizeDimName(explicitDim || resolveDim(m));
+          
+          // --- STRICT MEMBER GUARD ---
+          // If the AI puts "Department" in the Account dimension, force it to Department
+          if (dim === 'Account' && (m.toLowerCase() === 'department' || m.toLowerCase() === 'all department' || m.toLowerCase() === 'td')) {
+            dim = 'Department';
+          }
+          if (dim === 'Unknown') return;
           
           if (usedDims.has(dim) && section !== 'columns') return; // For columns, we might allow multiple groups
           if (!groups[dim]) groups[dim] = [];
@@ -270,9 +276,15 @@ export const exportDataSlice = async (rawArgs: any) => {
         });
       } else if (typeof parsed === 'object') {
         Object.entries(parsed).forEach(([rawDim, members]) => {
-          const dim = sanitizeDimName(rawDim);
-          if (usedDims.has(dim)) return; // Skip if already assigned
+          let dim = sanitizeDimName(rawDim);
           let membersArray = Array.isArray(members) ? members : [members];
+
+          // --- STRICT MEMBER GUARD ---
+          if (dim === 'Account' && (membersArray[0]?.toString().toLowerCase() === 'department')) {
+            dim = 'Department';
+          }
+
+          if (usedDims.has(dim)) return; // Skip if already assigned
           
           // Guard: sanitize generic guesses
           membersArray = membersArray.map(m => {
