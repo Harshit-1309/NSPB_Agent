@@ -1031,7 +1031,7 @@ try {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSend())}
-                placeholder="Message Closed AI..."
+                placeholder="Message NSPB Agent..."
               />
               <div className={`send-btn ${!input.trim() || isLoading ? 'disabled' : ''}`} onClick={handleSend}>
                 <Send size={18} />
