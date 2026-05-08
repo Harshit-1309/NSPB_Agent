@@ -456,10 +456,19 @@ export const exportDataSlice = async (rawArgs: any) => {
 
         // Action 2: Move Account to POV (ONLY if we aren't already pivoting by Account)
         if (targetDim !== "Account") {
-          let accounts = autoParse(rawArgs.rows || rawArgs.accounts || DEFAULT_POV["Account"]);
-          if (!accounts || (Array.isArray(accounts) && (accounts.length === 0 || accounts.includes("*")))) accounts = [DEFAULT_POV["Account"]];
+          // Robust Account Resolution: Check accounts arg, then POV, then default
+          let accounts = rawArgs.accounts;
+          if (!accounts && povData && povData["Account"]) {
+            accounts = povData["Account"];
+          }
+          if (!accounts) accounts = DEFAULT_POV["Account"];
           
-          const accountArray = Array.isArray(accounts) ? accounts : [accounts];
+          let parsedAccounts = autoParse(accounts);
+          if (!parsedAccounts || (Array.isArray(parsedAccounts) && (parsedAccounts.length === 0 || parsedAccounts.includes("*")))) {
+            parsedAccounts = [DEFAULT_POV["Account"]];
+          }
+          
+          const accountArray = Array.isArray(parsedAccounts) ? parsedAccounts : [parsedAccounts];
           grid.pov.dimensions.push("Account");
           // ENFORCE SINGLE MEMBER IN POV: Oracle only allows one member per POV dimension
           grid.pov.members.push([sanitizePovMember(accountArray[0])]);
