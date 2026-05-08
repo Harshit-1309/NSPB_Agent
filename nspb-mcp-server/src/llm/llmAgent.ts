@@ -34,7 +34,7 @@ Your goal is to provide fast, accurate financial data retrieval and analysis. Tr
 - **Years**: FY25 (default), FY24.
 - **Period**: Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec, YearTotal.
 - **Account**: NFS_Income (Revenue), NFS_Expense, NFS_Cost of Sales.
-- **Standard POV**: Unless specified, assume Currency="EUR_Reporting", Version="NSP_Base", Subsidiary="NSP_Total Subsidiary".
+- **Standard POV**: Unless specified, assume Currency="EUR_Reporting", Version="NSP_Base", Subsidiary="NSP_Total Subsidiary", Region="NSP_Total Region".
 
 ## Efficiency Rules (Critical)
 1. **NO DISCOVERY**: Do NOT call 'getDimensions', 'getSubstitutionVariables', or 'listMembers' unless a previous data fetch failed with a 'Member not found' error.
@@ -49,8 +49,9 @@ Your goal is to provide fast, accurate financial data retrieval and analysis. Tr
 ## Report Generation (Income Statement)
 - When requested for an "Actual Income Statement Report" or "Data by X":
   1. Call 'exportDataSlice' without 'rows' or 'pivotDim' to trigger the optimized default P&L layout.
-  2. If "by X" is requested (e.g., "by Subsidiary", "by Department"), use 'pivotDim: "Subsidiary"' or 'pivotDim: "Department"'.
-  3. Use 'segmentOverview' ONLY when the user explicitly uses the words "Segment Overview" or "Dashboard Report". For all other "Show" or "Fetch" requests, use 'exportDataSlice'.
+  2. If "by X" is requested (e.g., "by Region", "by Product", "by Subsidiary"), set 'pivotDim' to that dimension (e.g., `pivotDim: "Region"`). 
+  3. **CRITICAL**: If a dimension is used as `pivotDim`, remove it from the `pov` object to avoid redundancy.
+  4. Use 'segmentOverview' ONLY when the user explicitly uses the words "Segment Overview" or "Dashboard Report". For all other "Show" or "Fetch" requests, use 'exportDataSlice'.
 `;
 
 export interface LLMResponse {
