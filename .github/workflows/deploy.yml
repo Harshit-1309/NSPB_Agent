@@ -1,0 +1,35 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/nspb-agent
+            git pull origin master
+            
+            # Backend Build & Restart
+            cd nspb-mcp-server
+            npm install
+            npm run build
+            pm2 restart nspb-backend || pm2 start dist/server.js --name nspb-backend
+            
+            # Frontend Build
+            cd ../client
+            npm install
+            echo "VITE_API_URL=https://nspbagent.gooner-tech.com" > .env
+            npm run build
