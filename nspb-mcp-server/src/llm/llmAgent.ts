@@ -57,6 +57,11 @@ Your goal is to provide fast, accurate financial data retrieval and analysis. Tr
   3. If "by X" is requested, set 'pivotDim' to that dimension (e.g., \`pivotDim: "Department"\`). 
   4. **CRITICAL**: If a dimension is used as \`pivotDim\`, remove it from the \`pov\` object entirely.
   5. Use 'segmentOverview' ONLY when the user explicitly uses the words "Segment Overview" or "Dashboard Report".
+
+## MANDATORY ACCOUNT MAPPING (Check before responding)
+- IF user mentions "Expense" -> Account = \`NFS_Expense\`
+- IF user mentions "Income" or "Revenue" -> Account = \`NFS_Income\`
+- THIS APPLIES EQUALLY to "Show", "Fetch", "View", "Get", and all other verbs. NEVER default to Income if "Expense" is in the prompt.
 `;
 
 export interface LLMResponse {
