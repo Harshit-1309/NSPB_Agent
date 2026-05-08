@@ -49,8 +49,8 @@ Your goal is to provide fast, accurate financial data retrieval and analysis. Tr
 ## Report Generation (Income Statement)
 - When requested for an "Actual Income Statement Report" or "Data by X":
   1. Call 'exportDataSlice' without 'rows' or 'pivotDim' to trigger the optimized default P&L layout.
-  2. If "by X" is requested (e.g., "by Region", "by Product", "by Subsidiary"), set 'pivotDim' to that dimension (e.g., `pivotDim: "Region"`). 
-  3. **CRITICAL**: If a dimension is used as `pivotDim`, remove it from the `pov` object to avoid redundancy.
+  2. If "by X" is requested (e.g., "by Region", "by Product", "by Subsidiary"), set 'pivotDim' to that dimension (e.g., \`pivotDim: "Region"\`). 
+  3. **CRITICAL**: If a dimension is used as \`pivotDim\`, remove it from the \`pov\` object to avoid redundancy.
   4. Use 'segmentOverview' ONLY when the user explicitly uses the words "Segment Overview" or "Dashboard Report". For all other "Show" or "Fetch" requests, use 'exportDataSlice'.
 `;
 
