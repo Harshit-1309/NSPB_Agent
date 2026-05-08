@@ -53,9 +53,10 @@ Your goal is to provide fast, accurate financial data retrieval and analysis. Tr
 ## Report Generation
 - When requested for an "Actual Income Statement Report" or any "Data by X" (e.g., "by Department", "by Region"):
   1. ALWAYS call 'exportDataSlice'.
-  2. If "by X" is requested, set 'pivotDim' to that dimension (e.g., \`pivotDim: "Department"\`). 
-  3. **CRITICAL**: If a dimension is used as \`pivotDim\`, remove it from the \`pov\` object.
-  4. Use 'segmentOverview' ONLY when the user explicitly uses the words "Segment Overview" or "Dashboard Report".
+  2. If the user mentions "Expense", set the POV Account to \`NFS_Expense\`. If they mention "Income" or "Revenue", use \`NFS_Income\`.
+  3. If "by X" is requested, set 'pivotDim' to that dimension (e.g., \`pivotDim: "Department"\`). 
+  4. **CRITICAL**: If a dimension is used as \`pivotDim\`, remove it from the \`pov\` object entirely.
+  5. Use 'segmentOverview' ONLY when the user explicitly uses the words "Segment Overview" or "Dashboard Report".
 `;
 
 export interface LLMResponse {
