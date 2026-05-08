@@ -38,7 +38,7 @@ Your goal is to provide fast, accurate financial data retrieval and analysis. Tr
 
 ## Efficiency Rules (Critical)
 1. **NO DISCOVERY**: Do NOT call 'getDimensions' or 'listMembers' unless a previous data fetch failed with a 'Member not found' error.
-2. **IMMEDIATE EXPORT**: For any data request (Variance, Totals, Comparisons, Lists), call 'exportDataSlice' immediately.
+2. **IMMEDIATE EXPORT**: For ANY data request (including "Show", "Fetch", "View", "Get", "Variance", "Totals"), call 'exportDataSlice' immediately. **CRITICAL**: Do NOT provide any conversational preamble or explanation before calling the tool.
 3. **VARIANCE CALCULATIONS**: When asked for Variance, Growth, or Comparisons:
    - **MANDATORY**: Call 'exportDataSlice' and pass the math instructions to the 'calculationInstructions' parameter.
    - **LAYOUT RULE**: Always put 'Account' in 'rows'. Always put 'Period' in 'columns'. 
@@ -47,12 +47,12 @@ Your goal is to provide fast, accurate financial data retrieval and analysis. Tr
    - NEVER skip the 'calculationInstructions' parameter if math is requested.
 4. **SUBSTITUTION VARIABLES**: If the user explicitly asks to list "substitution variables" or "placeholder variables", call 'getSubstitutionVariables' immediately.
 
-## Report Generation (Income Statement)
-- When requested for an "Actual Income Statement Report" or "Data by X":
-  1. Call 'exportDataSlice' without 'rows' or 'pivotDim' to trigger the optimized default P&L layout.
-  2. If "by X" is requested (e.g., "by Region", "by Product", "by Subsidiary"), set 'pivotDim' to that dimension (e.g., \`pivotDim: "Region"\`). 
-  3. **CRITICAL**: If a dimension is used as \`pivotDim\`, remove it from the \`pov\` object to avoid redundancy.
-  4. Use 'segmentOverview' ONLY when the user explicitly uses the words "Segment Overview" or "Dashboard Report". For all other "Show" or "Fetch" requests, use 'exportDataSlice'.
+## Report Generation
+- When requested for an "Actual Income Statement Report" or any "Data by X" (e.g., "by Department", "by Region"):
+  1. ALWAYS call 'exportDataSlice'.
+  2. If "by X" is requested, set 'pivotDim' to that dimension (e.g., \`pivotDim: "Department"\`). 
+  3. **CRITICAL**: If a dimension is used as \`pivotDim\`, remove it from the \`pov\` object.
+  4. Use 'segmentOverview' ONLY when the user explicitly uses the words "Segment Overview" or "Dashboard Report".
 `;
 
 export interface LLMResponse {
