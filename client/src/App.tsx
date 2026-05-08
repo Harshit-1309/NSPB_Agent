@@ -3,7 +3,8 @@ import {
   Plus, Send, User, Star, Monitor, Trash2, ChevronDown, ChevronRight, Sun, Moon,
   Copy, FileDown, Check, FileText, Table as TableIcon, Home,
   BarChart, Settings, Zap, Database, ArrowRight,
-  Columns, Edit2, XCircle, ArrowDown, ArrowUp
+  Columns, Edit2, XCircle, ArrowDown, ArrowUp,
+  PieChart, Users
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -11,6 +12,7 @@ import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { SegmentOverviewReport } from './SegmentOverviewReport';
+import { API_BASE_URL } from './config';
 import './App.css';
 
 // ── Error Boundary ─────────────────────────────────────────────────────────────
@@ -164,6 +166,18 @@ const HomeView = ({ onAction }: { onAction: (text: string) => void }) => {
       desc: "Check detailed properties of dimension members.",
       icon: <Database size={20} />,
       prompt: "Show me the details for member NFS_Income in the Account dimension."
+    },
+    {
+      title: "Segment Overview",
+      desc: "Executive dashboard with scenario comparison.",
+      icon: <PieChart size={20} />,
+      prompt: "Create a PnL Segment Overview for Nov-25."
+    },
+    {
+      title: "Pivoted Analysis",
+      desc: "Explore data by Subsidiary, Department, or Class.",
+      icon: <Users size={20} />,
+      prompt: "Show Expense data by Department for Oct FY25"
     }
   ];
 
@@ -234,14 +248,14 @@ const FilterDropdown = ({
       let res;
       if (gridConfig) {
         // Dynamic fetch: passes gridConfig to Oracle to run the grid and suppress members with no data!
-        res = await fetch('http://localhost:3000/api/members-dynamic', {
+        res = await fetch(`${API_BASE_URL}/api/members-dynamic`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ dim, gridConfig, livePov })
         });
       } else {
         // Fallback: static fetch of all descendants
-        res = await fetch(`http://localhost:3000/api/members?dim=${encodeURIComponent(dim)}`);
+        res = await fetch(`${API_BASE_URL}/api/members?dim=${encodeURIComponent(dim)}`);
       }
       
       if (res.ok) {
@@ -382,7 +396,7 @@ const RenderContent = ({ content }: { content: string }) => {
 
     setIsRefreshing(true);
     try {
-      const res = await fetch('http://localhost:3000/api/refilter', {
+      const res = await fetch(`${API_BASE_URL}/api/refilter`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ gridConfig, dim, member: newMember, livePov: updatedPovState })
@@ -722,6 +736,17 @@ function App() {
     }
   }, [input]);
 
+  // Close model dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsModelDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   // Expose filter change handler to window for CollapsiblePOV to call
   useEffect(() => {
     (window as any).handleFilterChange = (dim: string, memberName: string) => {
@@ -805,7 +830,7 @@ function App() {
     abortControllerRef.current = new AbortController();
 
     try {
-      const response = await fetch('http://localhost:3000/api/chat', {
+      const response = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         signal: abortControllerRef.current.signal,
@@ -910,6 +935,13 @@ try {
             </button>
           </div>
 
+          <button 
+            className={`home-nav-btn ${!activeThreadId ? 'active' : ''}`} 
+            onClick={() => setActiveThreadId(null)}
+          >
+            <Home size={18} /> <span>Home</span>
+          </button>
+
           <button className="new-chat-btn" onClick={createNewThread}>
             <Plus size={18} /> <span>New Analysis</span>
           </button>
@@ -930,38 +962,47 @@ try {
             ))}
           </div>
 
-          <div className="sidebar-footer">
-            <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-              <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
-            </button>
-          </div>
         </aside>
 
         {/* Main Content */}
         <main className="main-content">
-          <header className="main-header">
+          <header className="chat-header">
             <div className="header-left">
               {!isSidebarOpen && (
                 <button className="icon-btn" onClick={() => setIsSidebarOpen(true)}>
                   <Columns size={20} />
                 </button>
               )}
-              <div className="model-selector-wrap">
+              <div className="model-selector-wrapper" ref={dropdownRef}>
                 <button className="model-btn" onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}>
                   <Star size={16} className="model-star" />
-                  {MODELS.find(m => m.id === selectedModel)?.name} <ChevronDown size={16} />
+                  <span>{MODELS.find(m => m.id === selectedModel)?.name}</span>
+                  <ChevronDown size={16} className={`chevron ${isModelDropdownOpen ? 'rotated' : ''}`} />
                 </button>
                 {isModelDropdownOpen && (
-                  <div className="model-menu">
+                  <div className="model-dropdown">
                     {MODELS.map(m => (
-                      <div key={m.id} className={`model-item ${selectedModel === m.id ? 'active' : ''}`} onClick={() => { setSelectedModel(m.id); setIsModelDropdownOpen(false); }}>
-                        {m.name}
+                      <div 
+                        key={m.id} 
+                        className={`model-option ${selectedModel === m.id ? 'active' : ''}`} 
+                        onClick={() => { setSelectedModel(m.id); setIsModelDropdownOpen(false); }}
+                      >
+                        <div className="model-option-info">
+                          <span className="model-name">{m.name}</span>
+                          {selectedModel === m.id && <Check size={14} className="check-icon" />}
+                        </div>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
+            </div>
+
+            <div className="header-right">
+              <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+                {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
+              </button>
             </div>
           </header>
 

@@ -8,6 +8,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ChevronDown, RefreshCw, AlertCircle, Loader2, FileDown } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import { API_BASE_URL } from './config';
 import './SegmentOverviewReport.css';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -118,7 +119,7 @@ function DimDropdown({
     };
 
     try {
-      const res = await fetch('http://localhost:3000/api/members-dynamic', {
+      const res = await fetch(`${API_BASE_URL}/api/members-dynamic`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dim, gridConfig, livePov: pov })
@@ -132,7 +133,7 @@ function DimDropdown({
       }
     } catch {
       // fallback to static
-      const res = await fetch(`http://localhost:3000/api/members?dim=${encodeURIComponent(dim)}`).catch(() => null);
+      const res = await fetch(`${API_BASE_URL}/api/members?dim=${encodeURIComponent(dim)}`).catch(() => null);
       if (res?.ok) {
         const data = await res.json();
         setMembers((data.items || []).map((m: any) => ({ name: m.name || m, alias: m.alias || m.name || m })));
@@ -209,7 +210,7 @@ export function SegmentOverviewReport({
     setError(null);
 
     try {
-      const res = await fetch('http://localhost:3000/api/segment-overview/refilter', {
+      const res = await fetch(`${API_BASE_URL}/api/segment-overview/refilter`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

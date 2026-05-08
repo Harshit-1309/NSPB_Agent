@@ -3,31 +3,34 @@
   "grid": {
     "pov": {
       "dimensions": [
-        "Years",
-        "Scenario",
+        "Account",
+        "Currency",
+        "Version",
         "Subsidiary",
-        "Region",
+        "Years",
         "Location",
         "Relationship",
         "Tracker",
-        "Currency",
         "Department",
         "Class",
         "Vertical",
-        "Version"
+        "Scenario"
       ],
       "members": [
         [
-          "FY25"
+          "NFS_Income"
         ],
         [
-          "Actual"
+          "EUR_Reporting"
+        ],
+        [
+          "NSP_Base"
         ],
         [
           "NSP_Total Subsidiary"
         ],
         [
-          "Total Region"
+          "FY25"
         ],
         [
           "NSP_Total Location"
@@ -39,9 +42,6 @@
           "NSP_Amount"
         ],
         [
-          "EUR_Reporting"
-        ],
-        [
           "TD"
         ],
         [
@@ -51,7 +51,7 @@
           "TV"
         ],
         [
-          "NSP_Base"
+          "NSP_Actual"
         ]
       ]
     },
@@ -62,9 +62,7 @@
         ],
         "members": [
           [
-            "Oct",
-            "Nov",
-            "Dec"
+            "TP10"
           ]
         ]
       }
@@ -72,12 +70,11 @@
     "rows": [
       {
         "dimensions": [
-          "Account"
+          "Region"
         ],
         "members": [
           [
-            "NFS_Income",
-            "Gross Profit"
+            "ILvl0Descendants(\"Total Region\")"
           ]
         ]
       }

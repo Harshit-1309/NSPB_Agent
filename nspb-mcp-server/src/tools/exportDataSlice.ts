@@ -96,6 +96,16 @@ const normalizeMember = (m: string, dim: string): string => {
     if (lower === 'budget' || lower === 'bud' || lower === 'plan') return 'NSP_Budget';
   }
 
+  // Period normalization (Common Aliases -> Technical TP Codes)
+  if (dim === 'Period') {
+    const periodMap: Record<string, string> = {
+      'jan': 'TP01', 'feb': 'TP02', 'mar': 'TP03', 'apr': 'TP04', 'may': 'TP05', 'jun': 'TP06',
+      'jul': 'TP07', 'aug': 'TP08', 'sep': 'TP09', 'oct': 'TP10', 'nov': 'TP11', 'dec': 'TP12',
+      'yeartotal': 'YearTotal', 'begbalance': 'BegBalance'
+    };
+    if (periodMap[lower]) return periodMap[lower];
+  }
+
   return m;
 };
 
@@ -645,11 +655,8 @@ export const exportDataSlice = async (rawArgs: any) => {
     const fullAliasMap: Record<string, string> = Object.assign({}, ...aliasMaps);
 
     const rowDims = grid.rows.length > 0 ? grid.rows[0].dimensions : [];
-    let transformedData: any = transformationService.transformNSPBResponse(rawData, grid.pov, fullAliasMap, rowDims);
-    if (rawArgs.calculationInstructions && !transformedData.error) {
-      transformedData = await mathAgent.applyMath(transformedData, rawArgs.calculationInstructions, 'openai/gpt-4o');
-    }
-
+    const transformedData: any = transformationService.transformNSPBResponse(rawData, grid.pov, fullAliasMap, rowDims);
+    
     return { success: true, data: transformedData };
   } catch (error: any) {
     logger.error('Export tool failed', { error: error.message });
