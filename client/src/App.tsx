@@ -3,7 +3,7 @@ import {
   Plus, Send, User, Star, Monitor, Trash2, ChevronDown, ChevronRight, Sun, Moon,
   Copy, FileDown, Check, FileText, Table as TableIcon, Home,
   BarChart, Settings, Zap, Database, ArrowRight,
-  Columns, Edit2, XCircle, ArrowDown, ArrowUp,
+  Columns, Edit2, XCircle,
   PieChart, Users
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -697,23 +697,11 @@ function App() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const [showScrollBottomButton, setShowScrollBottomButton] = useState(false);
-  const [showScrollTopButton, setShowScrollTopButton] = useState(false);
 
   const activeThread = threads.find(t => t.id === activeThreadId) || null;
   const messages = activeThread?.messages || [];
 
   const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  const scrollPageUp = () => {
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollBy({ top: -messagesContainerRef.current.clientHeight, behavior: 'smooth' });
-    }
-  };
-  const scrollPageDown = () => {
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollBy({ top: messagesContainerRef.current.clientHeight, behavior: 'smooth' });
-    }
-  };
   useEffect(scrollToBottom, [messages, isLoading, currentSteps]);
 
   useEffect(() => {
@@ -891,16 +879,6 @@ function App() {
     }
   };
 
-  const handleCancel = () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      setThreads(prev => prev.map(t =>
-        t.id === activeThreadId
-          ? { ...t, messages: [...t.messages, { role: 'agent', content: '_Analysis cancelled by user._' }] }
-          : t
-      ));
-    }
-  };
 
   const handleQuickAction = (prompt: string) => {
     createNewThread();
