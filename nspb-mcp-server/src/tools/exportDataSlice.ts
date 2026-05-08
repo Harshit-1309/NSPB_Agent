@@ -140,6 +140,16 @@ export const exportDataSlice = async (rawArgs: any) => {
     };
     const usedDims = new Set<string>();
 
+    /**
+     * Dimension Name Sanitizer (Fail-safe for AI stubbornness)
+     */
+    const sanitizeDimName = (d: string): string => {
+      if (!d) return d;
+      const lower = d.toLowerCase();
+      if (lower === 'year') return 'Years'; // Force singular to plural
+      return d;
+    };
+
     const processSection = (section: 'rows' | 'columns' | 'pov', input: any) => {
       if (!input) return;
       const parsed = autoParse(input);
@@ -160,7 +170,7 @@ export const exportDataSlice = async (rawArgs: any) => {
                 explicitDim = d.trim();
                 mem = rest.join(':').trim();
               }
-              const dim = explicitDim || resolveDim(mem);
+              const dim = sanitizeDimName(explicitDim || resolveDim(mem));
               if (dim !== 'Unknown') {
                 dims.push(dim);
                 mems.push([mem]);
@@ -180,7 +190,7 @@ export const exportDataSlice = async (rawArgs: any) => {
             explicitDim = parts[0].trim();
             m = parts.slice(1).join(':').trim(); // support ILvl0Descendants(...) as member
           }
-          const dim = explicitDim || resolveDim(m);
+          const dim = sanitizeDimName(explicitDim || resolveDim(m));
           if (dim === 'Unknown') return; // prevent Oracle 400 errors if dimension is completely unmappable
           
           if (usedDims.has(dim) && section !== 'columns') return; // For columns, we might allow multiple groups
@@ -227,7 +237,8 @@ export const exportDataSlice = async (rawArgs: any) => {
         }
       } else if (typeof parsed === 'object' && Array.isArray(parsed.dimensions) && Array.isArray(parsed.members)) {
         // Handle native Oracle format { dimensions: ["Class"], members: [["Total Class"]] }
-        parsed.dimensions.forEach((dim: string, i: number) => {
+        parsed.dimensions.forEach((rawDim: string, i: number) => {
+          const dim = sanitizeDimName(rawDim);
           if (usedDims.has(dim)) return;
           const membersArray = Array.isArray(parsed.members[i]) ? parsed.members[i] : [parsed.members[i]];
           
@@ -258,7 +269,8 @@ export const exportDataSlice = async (rawArgs: any) => {
           usedDims.add(dim);
         });
       } else if (typeof parsed === 'object') {
-        Object.entries(parsed).forEach(([dim, members]) => {
+        Object.entries(parsed).forEach(([rawDim, members]) => {
+          const dim = sanitizeDimName(rawDim);
           if (usedDims.has(dim)) return; // Skip if already assigned
           let membersArray = Array.isArray(members) ? members : [members];
           
