@@ -74,6 +74,7 @@ app.post('/api/chat', async (req: Request, res: Response) => {
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('X-Accel-Buffering', 'no'); // Disable Nginx buffering for SSE
 
   const sendEvent = (type: string, data: any) => {
     res.write(`data: ${JSON.stringify({ type, data })}\n\n`);
