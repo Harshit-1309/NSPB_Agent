@@ -748,20 +748,6 @@ function App() {
     };
   }, []);
 
-  useEffect(() => {
-    const container = messagesContainerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      const isScrolledUp = container.scrollHeight - container.scrollTop - container.clientHeight > 200;
-      const isScrolledDown = container.scrollTop > 300;
-      setShowScrollBottomButton(isScrolledUp);
-      setShowScrollTopButton(isScrolledDown);
-    };
-
-    container.addEventListener('scroll', handleScroll);
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const createNewThread = () => {
     const newThread = { id: crypto.randomUUID(), title: 'New Analysis', messages: [], createdAt: Date.now() };
