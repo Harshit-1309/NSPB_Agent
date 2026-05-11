@@ -121,7 +121,10 @@ function DimDropdown({
     try {
       const res = await fetch(`${API_BASE_URL}/api/members-dynamic`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': localStorage.getItem('nspb_token') || ''
+        },
         body: JSON.stringify({ dim, gridConfig, livePov: pov })
       });
       if (res.ok) {
@@ -133,7 +136,11 @@ function DimDropdown({
       }
     } catch {
       // fallback to static
-      const res = await fetch(`${API_BASE_URL}/api/members?dim=${encodeURIComponent(dim)}`).catch(() => null);
+      const res = await fetch(`${API_BASE_URL}/api/members?dim=${encodeURIComponent(dim)}`, {
+        headers: { 
+          'Authorization': localStorage.getItem('nspb_token') || ''
+        }
+      }).catch(() => null);
       if (res?.ok) {
         const data = await res.json();
         setMembers((data.items || []).map((m: any) => ({ name: m.name || m, alias: m.alias || m.name || m })));
@@ -212,7 +219,10 @@ export function SegmentOverviewReport({
     try {
       const res = await fetch(`${API_BASE_URL}/api/segment-overview/refilter`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': localStorage.getItem('nspb_token') || ''
+        },
         body: JSON.stringify({
           periodLabel,
           filterDimensions: data.filterDimensions,

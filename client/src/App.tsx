@@ -15,6 +15,101 @@ import { SegmentOverviewReport } from './SegmentOverviewReport';
 import { API_BASE_URL } from './config';
 import './App.css';
 
+// ── Authentication ─────────────────────────────────────────────────────────────
+const LoginPage = ({ onLogin }: { onLogin: (token: string) => void }) => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.token) {
+        onLogin(data.token, data.username || username);
+      } else {
+        setError(data.error || 'Login failed. Please check your credentials.');
+      }
+    } catch (err) {
+      setError('Connection failed. Please ensure the server is running.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="login-page">
+      <div className="login-bg-glow" />
+      <div className="login-card">
+        <div className="login-header">
+          <div className="login-logo">
+            <Database size={32} />
+          </div>
+          <h1>NSPB Agent</h1>
+          <p>Sign in with your Oracle NSPB credentials</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="login-form">
+          <div className="form-group">
+            <label>Username</label>
+            <div className="input-with-icon">
+              <User size={18} />
+              <input 
+                type="text" 
+                placeholder="IdentityDomain.Username" 
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>Password</label>
+            <div className="input-with-icon">
+              <Zap size={18} />
+              <input 
+                type="password" 
+                placeholder="••••••••" 
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          {error && <div className="login-error">{error}</div>}
+
+          <button type="submit" className="login-btn" disabled={isLoading}>
+            {isLoading ? (
+              <div className="login-spinner" />
+            ) : (
+              <>
+                <span>Sign In</span>
+                <ArrowRight size={18} />
+              </>
+            )}
+          </button>
+        </form>
+
+        <div className="login-footer">
+          <p>Secure Enterprise-Grade Encryption</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ── Error Boundary ─────────────────────────────────────────────────────────────
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: any }> {
   constructor(props: any) {
@@ -250,12 +345,19 @@ const FilterDropdown = ({
         // Dynamic fetch: passes gridConfig to Oracle to run the grid and suppress members with no data!
         res = await fetch(`${API_BASE_URL}/api/members-dynamic`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': localStorage.getItem('nspb_token') || ''
+          },
           body: JSON.stringify({ dim, gridConfig, livePov })
         });
       } else {
         // Fallback: static fetch of all descendants
-        res = await fetch(`${API_BASE_URL}/api/members?dim=${encodeURIComponent(dim)}`);
+        res = await fetch(`${API_BASE_URL}/api/members?dim=${encodeURIComponent(dim)}`, {
+          headers: { 
+            'Authorization': localStorage.getItem('nspb_token') || ''
+          }
+        });
       }
       
       if (res.ok) {
@@ -398,7 +500,10 @@ const RenderContent = ({ content }: { content: string }) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/refilter`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': localStorage.getItem('nspb_token') || ''
+        },
         body: JSON.stringify({ gridConfig, dim, member: newMember, livePov: updatedPovState })
       });
       if (res.ok) {
@@ -684,6 +789,24 @@ function App() {
     }
   });
 
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('nspb_token'));
+  const [userHandle, setUserHandle] = useState<string | null>(() => localStorage.getItem('nspb_user'));
+  const isAuthenticated = !!token;
+
+  const handleLogin = (newToken: string, username: string) => {
+    localStorage.setItem('nspb_token', newToken);
+    localStorage.setItem('nspb_user', username);
+    setToken(newToken);
+    setUserHandle(username);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('nspb_token');
+    localStorage.removeItem('nspb_user');
+    setToken(null);
+    setUserHandle(null);
+  };
+
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -806,7 +929,10 @@ function App() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': token || ''
+        },
         signal: abortControllerRef.current.signal,
         body: JSON.stringify({
           message: userQuery,
@@ -885,6 +1011,10 @@ function App() {
   };
 
 try {
+    if (!isAuthenticated) {
+      return <LoginPage onLogin={handleLogin} />;
+    }
+
     return (
       <div className={`app-container ${theme}`}>
         {/* Sidebar */}
@@ -924,6 +1054,30 @@ try {
                 ))}
               </div>
             ))}
+          </div>
+
+          <div className="sidebar-footer">
+            <div className="user-profile">
+              <div className="user-avatar-small">
+                <User size={16} />
+              </div>
+              <div className="user-info">
+                <span className="user-name">
+                  {(() => {
+                    if (!userHandle) return 'User';
+                    // Remove domain if present (e.g. pubpeople01.name...)
+                    let name = userHandle.includes('.') && userHandle.indexOf('.') < userHandle.indexOf('@') 
+                      ? userHandle.split('.')[1] 
+                      : userHandle.split('@')[0];
+                    // Handle case where no dot exists before @
+                    if (name.includes('@')) name = name.split('@')[0];
+                    // Capitalize
+                    return name.charAt(0).toUpperCase() + name.slice(1);
+                  })()}
+                </span>
+                <span className="user-email">{userHandle || 'Logged In'}</span>
+              </div>
+            </div>
           </div>
 
         </aside>
@@ -966,6 +1120,10 @@ try {
               <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
                 {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                 <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
+              </button>
+              <button className="header-logout-btn" onClick={handleLogout} title="Sign Out">
+                <XCircle size={18} />
+                <span>Logout</span>
               </button>
             </div>
           </header>

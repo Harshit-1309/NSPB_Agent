@@ -4,7 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import logger from './services/logger.js';
 import { llmAgent } from './llm/llmAgent.js';
-import oracleClient from './services/oracleClient.js';
+import oracleClient, { authStorage, rawClient } from './services/oracleClient.js';
 import { exportDataSlice } from './tools/exportDataSlice.js';
 import { segmentOverview } from './tools/segmentOverview.js';
 import { transformationService } from './services/transformationService.js';
@@ -18,6 +18,20 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 const PORT = process.env.PORT || 3000;
+
+// Global Middleware to handle Dynamic Authentication
+app.use((req, res, next) => {
+  const auth = req.headers.authorization;
+  
+  // Exclude login and health from requiring auth if you want, 
+  // but for NSPB, we usually need it for everything.
+  if (auth) {
+    authStorage.run(auth, () => next());
+  } else {
+    // Let it pass, the oracleClient will warn/fail if auth is missing and it's needed
+    next();
+  }
+});
 
 import { executeTool, TOOLS_REGISTRY } from './agent/toolDispatcher.js';
 
@@ -403,6 +417,58 @@ app.post('/api/segment-overview/refilter', async (req: Request, res: Response) =
   } catch (err: any) {
     logger.error('[/api/segment-overview/refilter] Failed', { error: err.message });
     return res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Authentication ─────────────────────────────────────────────────────────
+app.post('/api/login', async (req: Request, res: Response) => {
+  let { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Username and password are required' });
+  }
+
+  // Auto-prepend Identity Domain if missing
+  const domain = process.env.IDENTITY_DOMAIN;
+  if (domain && !username.startsWith(`${domain}.`)) {
+    // Only prepend if the user didn't already provide a domain (heuristic: look for the first dot)
+    // Most NSPB users are Email addresses, so we look for Domain.Email@company.com
+    // If they just typed Email@company.com, we add the domain.
+    username = `${domain}.${username}`;
+    logger.info(`Prepended Identity Domain to username: ${username}`);
+  }
+
+  const authHeader = `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`;
+
+  try {
+    // Run the check within the authStorage context
+    const success = await authStorage.run(authHeader, async () => {
+      // Attempt to fetch application info as a "ping" to verify credentials
+      // Using rawClient to hit the base applications endpoint
+      await rawClient.get('/HyperionPlanning/rest/v3/applications');
+      return true;
+    });
+
+    if (success) {
+      logger.info(`Login successful for user: ${username}`);
+      return res.json({ 
+        success: true, 
+        message: 'Login successful',
+        username, // Return the (potentially prefixed) username
+        token: authHeader // Frontend will store this and send in Authorization header
+      });
+    }
+  } catch (err: any) {
+    const status = err.response?.status || 500;
+    logger.error(`Login failed for user ${username}: ${err.message}`);
+    
+    if (status === 401) {
+      return res.status(401).json({ 
+        error: 'Invalid credentials or missing Identity Domain prefix',
+        details: 'Ensure your username is in the format: IdentityDomain.Username'
+      });
+    }
+    
+    return res.status(status).json({ error: 'Failed to connect to Oracle NSPB', details: err.message });
   }
 });
 

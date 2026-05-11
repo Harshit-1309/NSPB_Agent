@@ -1,36 +1,66 @@
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
 import dotenv from 'dotenv';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import logger from './logger.js';
 
 dotenv.config();
 
 const {
   ORACLE_BASE_URL,
-  ORACLE_USERNAME,
-  ORACLE_PASSWORD,
   APP_NAME
 } = process.env;
 
-if (!ORACLE_BASE_URL || !ORACLE_USERNAME || !ORACLE_PASSWORD || !APP_NAME) {
-  logger.error('Missing required environment variables for Oracle NSPB connection');
+// This storage will hold the Authorization header for the duration of a request
+export const authStorage = new AsyncLocalStorage<string>();
+
+if (!ORACLE_BASE_URL || !APP_NAME) {
+  logger.error('Missing required environment variables ORACLE_BASE_URL or APP_NAME');
   throw new Error('Environment configuration error');
 }
 
-// Create encoded credentials for Basic Auth
-const authHeader = `Basic ${Buffer.from(`${ORACLE_USERNAME}:${ORACLE_PASSWORD}`).toString('base64')}`;
+/**
+ * Helper to get the current auth header from storage or fallback to env for dev/testing
+ */
+const getAuthHeader = () => {
+  const storedAuth = authStorage.getStore();
+  if (storedAuth) return storedAuth;
+
+  // Fallback to .env credentials ONLY if they exist (for local testing/CLI scripts)
+  const envUser = process.env.ORACLE_USERNAME;
+  const envPass = process.env.ORACLE_PASSWORD;
+  if (envUser && envPass) {
+    return `Basic ${Buffer.from(`${envUser}:${envPass}`).toString('base64')}`;
+  }
+
+  return undefined;
+};
 
 // Function to create a client for a specific service path
 const createClient = (basePath: string) => {
   const client = axios.create({
     baseURL: `${new URL(ORACLE_BASE_URL).origin}${basePath}`,
     headers: {
-      'Authorization': authHeader,
       'Content-Type': 'application/json',
       'Accept': 'application/json',
       'X-Requested-By': 'Link'
     },
     timeout: 60000
+  });
+
+  // Dynamically inject the Authorization header into every request
+  client.interceptors.request.use((config) => {
+    const auth = getAuthHeader();
+    if (auth) {
+      config.headers['Authorization'] = auth;
+    } else {
+      // In production, we should probably throw here if not logged in
+      logger.warn(`No Authorization found for request to ${config.url}`);
+    }
+
+    const fullUrl = `${config.baseURL}${config.url}`;
+    logger.info(`Oracle API Request: ${config.method?.toUpperCase()} ${fullUrl}`);
+    return config;
   });
 
   // Configure retry mechanism
@@ -44,12 +74,6 @@ const createClient = (basePath: string) => {
   });
 
   // Interceptors
-  client.interceptors.request.use((config) => {
-    const fullUrl = `${config.baseURL}${config.url}`;
-    logger.info(`Oracle API Request: ${config.method?.toUpperCase()} ${fullUrl}`);
-    return config;
-  });
-
   client.interceptors.response.use((response) => {
     let displayData: any = '[Response Body Hidden]';
     const isLargeDiscovery = response.config.method?.toUpperCase() === 'GET' && 
@@ -68,10 +92,9 @@ const createClient = (basePath: string) => {
     });
 
     // Handle cases where Oracle redirects to a login page instead of returning 401
-    // This happens if the username is missing the identity domain prefix
     if (typeof response.data === 'string' && (response.data.includes('<!--loginForm-->') || response.data.includes('loginForm'))) {
-      const error = new Error('User not found or missing Identity Domain prefix') as any;
-      error.response = { status: 401, data: { detail: 'User not found. Ensure your username has the Identity Domain prefix (e.g. IdentityDomain.Username)' } };
+      const error = new Error('Invalid credentials or missing Identity Domain prefix') as any;
+      error.response = { status: 401, data: { detail: 'Unauthorized. Please check your credentials and Identity Domain prefix.' } };
       throw error;
     }
 
@@ -82,19 +105,7 @@ const createClient = (basePath: string) => {
     const errorDetails = errorData || error.message;
 
     if (status === 401) {
-      const errorStr = JSON.stringify(errorDetails);
-      logger.error(`Oracle API 401 Unauthorized: ${errorStr}`);
-      
-      // Check if username likely lacks identity domain
-      const hasDomain = ORACLE_USERNAME?.includes('.');
-      if (!hasDomain || errorStr.includes('User not found') || errorStr.includes('Invalid user')) {
-        logger.warn('--------------------------------------------------------------------------------');
-        logger.warn('CRITICAL AUTH HINT: Your username likely needs an Identity Domain prefix.');
-        logger.warn(`Current username: ${ORACLE_USERNAME}`);
-        logger.warn('Expected format:  IdentityDomain.Username (e.g. idcs-1234.jsmith@example.com)');
-        logger.warn('Please update your .env file and the server will restart.');
-        logger.warn('--------------------------------------------------------------------------------');
-      }
+      logger.error(`Oracle API 401 Unauthorized for URL: ${error.config?.url}`);
     } else {
       const errorStr = JSON.stringify(errorData);
       logger.error(`Oracle API Response Error: ${status || 'Network Error'}`, {
@@ -117,3 +128,4 @@ export const rawClient = createClient(''); // Used for discovery/absolute paths
 // Maintain default export as planningClient
 export default planningClient;
 export { APP_NAME, ORACLE_BASE_URL };
+
