@@ -16,7 +16,7 @@ import { API_BASE_URL } from './config';
 import './App.css';
 
 // ── Authentication ─────────────────────────────────────────────────────────────
-const LoginPage = ({ onLogin }: { onLogin: (token: string) => void }) => {
+const LoginPage = ({ onLogin }: { onLogin: (token: string, username: string) => void }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
