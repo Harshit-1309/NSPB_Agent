@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Plus, Send, User, Star, Monitor, Trash2, ChevronDown, ChevronRight, Sun, Moon,
   Copy, FileDown, Check, FileText, Table as TableIcon, Home,
@@ -12,6 +12,9 @@ import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { SegmentOverviewReport } from './SegmentOverviewReport';
+import { CommentaryReport } from './CommentaryReport';
+import { ReportCharts } from './ReportCharts';
+import pptxgen from 'pptxgenjs';
 import { API_BASE_URL } from './config';
 import './App.css';
 
@@ -473,6 +476,19 @@ const RenderContent = ({ content }: { content: string }) => {
   const [liveTable, setLiveTable] = useState<any>(null);
   const [livePov, setLivePov] = useState<Record<string, string>>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [commentary, setCommentary] = useState<any>(null);
+  const [isCommentaryLoading, setIsCommentaryLoading] = useState(false);
+  const [segmentRows, setSegmentRows] = useState<any[]>(() => {
+    try {
+      if (content.trim().startsWith('{')) {
+        const parsed = JSON.parse(content);
+        if (parsed.type === 'segment_overview' && parsed.data) {
+          return parsed.data.rows || [];
+        }
+      }
+    } catch (e) {}
+    return [];
+  });
 
   let parsedData: any = null;
   try { 
@@ -481,7 +497,429 @@ const RenderContent = ({ content }: { content: string }) => {
     }
   } catch (e) { /* not JSON */ }
 
+  const fetchCommentary = useCallback(async (rows: any[], period: string, currency: string) => {
+    setIsCommentaryLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/segment-overview/commentary`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': localStorage.getItem('nspb_token') || ''
+        },
+        body: JSON.stringify({ rows, period, currency })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.commentary) {
+          setCommentary(data.commentary);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch commentary:', err);
+    } finally {
+      setIsCommentaryLoading(false);
+    }
+  }, []);
+
+  // Fetch initial commentary when component mounts or content changes
+  useEffect(() => {
+    let parsed: any = null;
+    try {
+      if (content.trim().startsWith('{')) {
+        parsed = JSON.parse(content);
+      }
+    } catch (e) {}
+
+    if (parsed && parsed.type === 'segment_overview' && parsed.data) {
+      setSegmentRows(parsed.data.rows || []);
+      const initialRows = parsed.data.rows || [];
+      const initialPeriod = parsed.periodLabel || parsed.data?.period || 'Mar-25';
+      const initialCurrency = parsed.data.povDetails?.Currency || 'EUR_Reporting';
+      fetchCommentary(initialRows, initialPeriod, initialCurrency);
+    }
+  }, [content, fetchCommentary]);
+
   const effectiveTable = liveTable ?? parsedData?.table;
+
+  // PowerPoint Slide Export Logic
+  const exportToPPT = async (rows: any[], period: string, commentaryData: any) => {
+    try {
+      const PptxClass = (pptxgen as any).default || pptxgen;
+      const pptx = new PptxClass();
+      pptx.defineLayout({ name: 'WIDESCREEN_16_9', width: 13.333, height: 7.5 });
+      pptx.layout = 'WIDESCREEN_16_9';
+
+      const slide = pptx.addSlide();
+
+      // 1. Red Header Rectangle (Top Left)
+      slide.addShape('rect', {
+        x: 0.4,
+        y: 0.3,
+        w: 3.2,
+        h: 0.6,
+        fill: { color: 'EF4444' }
+      });
+      
+      slide.addText('Segment Overview', {
+        x: 0.4,
+        y: 0.3,
+        w: 3.2,
+        h: 0.6,
+        color: 'FFFFFF',
+        fontSize: 20,
+        bold: true,
+        align: 'center',
+        valign: 'middle',
+        fontFace: 'Calibri'
+      });
+
+      const formatPeriodLong = (pLabel: string) => {
+        const parts = pLabel.split('-');
+        const monthsLong: Record<string, string> = {
+          'Jan': 'January', 'Feb': 'February', 'Mar': 'March', 'Apr': 'April',
+          'May': 'May', 'Jun': 'June', 'Jul': 'July', 'Aug': 'August',
+          'Sep': 'September', 'Oct': 'October', 'Nov': 'November', 'Dec': 'December'
+        };
+        const m = monthsLong[parts[0]] || parts[0];
+        const y = parts[1] ? `20${parts[1]}` : '2025';
+        return `${m} ${y}`;
+      };
+
+      slide.addText(formatPeriodLong(period), {
+        x: 0.4,
+        y: 0.95,
+        w: 4.0,
+        h: 0.4,
+        color: '1E293B',
+        fontSize: 18,
+        bold: true,
+        valign: 'middle',
+        fontFace: 'Calibri'
+      });
+
+      // 2. Commentary Border Box (Left Column)
+      slide.addShape('rect', {
+        x: 0.4,
+        y: 1.35,
+        w: 4.4,
+        h: 5.45,
+        fill: { color: 'FFFFFF' },
+        line: { color: '1E3A8A', width: 1.5 }
+      });
+
+      // Parse commentary bullets to formatted text runs
+      const parseBulletsToRuns = (bullets: any[]) => {
+        const runs: any[] = [];
+        bullets.forEach((b, bIdx) => {
+          const isFirstBullet = bIdx === 0;
+          const parts = (b.text || '').split(/({{H\d+}})/g);
+
+          parts.forEach((part: string, pIdx: number) => {
+            const isFirstPiece = pIdx === 0;
+            const match = part.match(/^{{H(\d+)}}$/);
+            let runText = part;
+            let runOpts: any = { fontSize: 8, color: '334155', fontFace: 'Calibri' };
+
+            if (match) {
+              const idx = parseInt(match[1], 10);
+              const hl = b.highlights?.[idx];
+              if (hl) {
+                const isNeg = hl.value < 0;
+                runText = hl.label;
+                runOpts = {
+                  fontSize: 8,
+                  color: isNeg ? 'EF4444' : '15803D',
+                  bold: true,
+                  fontFace: 'Calibri'
+                };
+              }
+            }
+
+            if (isFirstPiece) {
+              runText = '•  ' + runText;
+              if (!isFirstBullet) {
+                runText = '\n' + runText;
+              }
+            }
+            runs.push({ text: runText, options: runOpts });
+          });
+
+          // Sub-bullets (Children)
+          if (b.children && b.children.length > 0) {
+            b.children.forEach((cb: any) => {
+              const cbParts = (cb.text || '').split(/({{H\d+}})/g);
+              cbParts.forEach((cbPart: string, cbIdx: number) => {
+                const isFirstSubPiece = cbIdx === 0;
+                const cbMatch = cbPart.match(/^{{H(\d+)}}$/);
+                let runText = cbPart;
+                let runOpts: any = { fontSize: 7.5, color: '475569', fontFace: 'Calibri' };
+
+                if (cbMatch) {
+                  const idx = parseInt(cbMatch[1], 10);
+                  const hl = cb.highlights?.[idx];
+                  if (hl) {
+                    const isNeg = hl.value < 0;
+                    runText = hl.label;
+                    runOpts = {
+                      fontSize: 7.5,
+                      color: isNeg ? 'EF4444' : '15803D',
+                      bold: true,
+                      fontFace: 'Calibri'
+                    };
+                  }
+                }
+
+                if (isFirstSubPiece) {
+                  runText = '\n    ▪  ' + runText;
+                }
+                runs.push({ text: runText, options: runOpts });
+              });
+            });
+          }
+        });
+        return runs;
+      };
+
+      if (commentaryData && commentaryData.vsFcst?.length > 0) {
+        slide.addText('vs. F1 Forecast', {
+          x: 0.5,
+          y: 1.45,
+          w: 4.2,
+          h: 0.25,
+          color: '1E3A8A',
+          fontSize: 11,
+          bold: true,
+          underline: true,
+          fontFace: 'Calibri'
+        });
+
+        const vsFcstRuns = parseBulletsToRuns(commentaryData.vsFcst);
+        slide.addText(vsFcstRuns, {
+          x: 0.5,
+          y: 1.70,
+          w: 4.2,
+          h: 2.1,
+          align: 'left',
+          valign: 'top',
+          wrap: true,
+          fontFace: 'Calibri'
+        });
+      }
+
+      if (commentaryData && commentaryData.vsLy?.length > 0) {
+        slide.addText('vs. Last Year', {
+          x: 0.5,
+          y: 3.90,
+          w: 4.2,
+          h: 0.25,
+          color: '1E3A8A',
+          fontSize: 11,
+          bold: true,
+          underline: true,
+          fontFace: 'Calibri'
+        });
+
+        const vsLyRuns = parseBulletsToRuns(commentaryData.vsLy);
+        slide.addText(vsLyRuns, {
+          x: 0.5,
+          y: 4.15,
+          w: 4.2,
+          h: 2.5,
+          align: 'left',
+          valign: 'top',
+          wrap: true,
+          fontFace: 'Calibri'
+        });
+      }
+
+      // 3. Compact Segment Overview Table (Top Right)
+      const tableRows: any[][] = [];
+      const getYearFromPeriod = (pLabel: string) => {
+        const parts = pLabel.split('-');
+        const yShort = parts[1] || '25';
+        return `20${yShort}`;
+      };
+      const ytdHeaderLabel = `${getYearFromPeriod(period)} YTD`;
+
+      tableRows.push([
+        { text: 'Account', options: { fill: { color: '1E293B' }, color: 'FFFFFF', bold: true, fontSize: 8, margin: [1, 2, 1, 2], wrap: true, fontFace: 'Calibri' } },
+        { text: period, options: { fill: { color: '1E293B' }, color: 'FFFFFF', bold: true, fontSize: 8, align: 'right', margin: [1, 2, 1, 2], wrap: true, fontFace: 'Calibri' } },
+        { text: 'vs FCST', options: { fill: { color: '1E293B' }, color: 'FFFFFF', bold: true, fontSize: 8, align: 'right', margin: [1, 2, 1, 2], wrap: true, fontFace: 'Calibri' } },
+        { text: 'vs BUD', options: { fill: { color: '1E293B' }, color: 'FFFFFF', bold: true, fontSize: 8, align: 'right', margin: [1, 2, 1, 2], wrap: true, fontFace: 'Calibri' } },
+        { text: 'vs LY', options: { fill: { color: '1E293B' }, color: 'FFFFFF', bold: true, fontSize: 8, align: 'right', margin: [1, 2, 1, 2], wrap: true, fontFace: 'Calibri' } },
+        { text: 'vs LY %', options: { fill: { color: '1E293B' }, color: 'FFFFFF', bold: true, fontSize: 8, align: 'right', margin: [1, 2, 1, 2], wrap: true, fontFace: 'Calibri' } },
+        { text: ytdHeaderLabel, options: { fill: { color: '1E293B' }, color: 'FFFFFF', bold: true, fontSize: 8, align: 'right', margin: [1, 2, 1, 2], wrap: true, fontFace: 'Calibri' } },
+        { text: 'vs FCST', options: { fill: { color: '1E293B' }, color: 'FFFFFF', bold: true, fontSize: 8, align: 'right', margin: [1, 2, 1, 2], wrap: true, fontFace: 'Calibri' } },
+        { text: 'vs BUD', options: { fill: { color: '1E293B' }, color: 'FFFFFF', bold: true, fontSize: 8, align: 'right', margin: [1, 2, 1, 2], wrap: true, fontFace: 'Calibri' } },
+        { text: 'vs LY', options: { fill: { color: '1E293B' }, color: 'FFFFFF', bold: true, fontSize: 8, align: 'right', margin: [1, 2, 1, 2], wrap: true, fontFace: 'Calibri' } },
+        { text: 'vs LY %', options: { fill: { color: '1E293B' }, color: 'FFFFFF', bold: true, fontSize: 8, align: 'right', margin: [1, 2, 1, 2], wrap: true, fontFace: 'Calibri' } }
+      ]);
+
+      const fmtVal = (val: number | null, isPct = false) => {
+        if (val == null) return '–';
+        if (isPct) {
+          return (val * 100).toFixed(0) + '%';
+        }
+        const scaled = Math.round(val / 1000);
+        const formatted = Math.abs(scaled).toLocaleString('en-US');
+        return val < 0 ? `(${formatted})` : formatted;
+      };
+
+      const getColColor = (val: number | null, isVar = false) => {
+        if (val == null) return '0F172A';
+        if (val < 0) return 'DC2626';
+        return isVar ? '15803D' : '0F172A';
+      };
+
+      rows.forEach(r => {
+        const rowCells: any[] = [];
+        const indentStr = '  '.repeat(r.level);
+        
+        rowCells.push({
+          text: indentStr + r.label,
+          options: {
+            bold: r.isParent,
+            fontSize: 7.5,
+            color: r.isParent ? '0F172A' : '475569',
+            fill: r.isParent ? { color: 'F1F5F9' } : undefined,
+            margin: [1, 2, 1, 2],
+            wrap: true,
+            fontFace: 'Calibri'
+          }
+        });
+
+        rowCells.push({ text: fmtVal(r.actual), options: { align: 'right', fontSize: 7.5, bold: r.isParent, color: getColColor(r.actual), fill: r.isParent ? { color: 'F1F5F9' } : undefined, margin: [1, 2, 1, 2], wrap: true, fontFace: 'Calibri' } });
+        rowCells.push({ text: fmtVal(r.vsFcst), options: { align: 'right', fontSize: 7.5, bold: r.isParent, color: getColColor(r.vsFcst, true), fill: r.isParent ? { color: 'F1F5F9' } : undefined, margin: [1, 2, 1, 2], wrap: true, fontFace: 'Calibri' } });
+        rowCells.push({ text: fmtVal(r.vsBud), options: { align: 'right', fontSize: 7.5, bold: r.isParent, color: getColColor(r.vsBud, true), fill: r.isParent ? { color: 'F1F5F9' } : undefined, margin: [1, 2, 1, 2], wrap: true, fontFace: 'Calibri' } });
+        rowCells.push({ text: fmtVal(r.ly), options: { align: 'right', fontSize: 7.5, bold: r.isParent, color: getColColor(r.ly), fill: r.isParent ? { color: 'F1F5F9' } : undefined, margin: [1, 2, 1, 2], wrap: true, fontFace: 'Calibri' } });
+        rowCells.push({ text: fmtVal(r.vsLyPct, true), options: { align: 'right', fontSize: 7.5, bold: r.isParent, color: getColColor(r.vsLyPct, true), fill: r.isParent ? { color: 'F1F5F9' } : undefined, margin: [1, 2, 1, 2], wrap: true, fontFace: 'Calibri' } });
+
+        rowCells.push({ text: fmtVal(r.ytdActual), options: { align: 'right', fontSize: 7.5, bold: r.isParent, color: getColColor(r.ytdActual), fill: r.isParent ? { color: 'F1F5F9' } : undefined, margin: [1, 2, 1, 2], wrap: true, fontFace: 'Calibri' } });
+        rowCells.push({ text: fmtVal(r.ytdVsFcst), options: { align: 'right', fontSize: 7.5, bold: r.isParent, color: getColColor(r.ytdVsFcst, true), fill: r.isParent ? { color: 'F1F5F9' } : undefined, margin: [1, 2, 1, 2], wrap: true, fontFace: 'Calibri' } });
+        rowCells.push({ text: fmtVal(r.ytdVsBud), options: { align: 'right', fontSize: 7.5, bold: r.isParent, color: getColColor(r.ytdVsBud, true), fill: r.isParent ? { color: 'F1F5F9' } : undefined, margin: [1, 2, 1, 2], wrap: true, fontFace: 'Calibri' } });
+        rowCells.push({ text: fmtVal(r.ytdLy), options: { align: 'right', fontSize: 7.5, bold: r.isParent, color: getColColor(r.ytdLy), fill: r.isParent ? { color: 'F1F5F9' } : undefined, margin: [1, 2, 1, 2], wrap: true, fontFace: 'Calibri' } });
+        rowCells.push({ text: fmtVal(r.ytdVsLyPct, true), options: { align: 'right', fontSize: 7.5, bold: r.isParent, color: getColColor(r.ytdVsLyPct, true), fill: r.isParent ? { color: 'F1F5F9' } : undefined, margin: [1, 2, 1, 2], wrap: true, fontFace: 'Calibri' } });
+
+        tableRows.push(rowCells);
+      });
+
+      slide.addTable(tableRows, {
+        x: 5.0,
+        y: 0.3,
+        w: 7.9,
+        colW: [1.8, 0.61, 0.61, 0.61, 0.61, 0.61, 0.61, 0.61, 0.61, 0.61, 0.61],
+        border: { type: 'solid', color: 'E2E8F0', pt: 0.5 },
+        autoPage: false
+      });
+
+      // 4. Capture & Add Charts to bottom right (Grouped Bar + Pie)
+      const barSvg = document.querySelector('.rc-svg-bar') as SVGSVGElement | null;
+      const pieSvg = document.querySelector('.rc-svg-pie') as SVGSVGElement | null;
+
+      const svgToPng = (svgElement: SVGSVGElement): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          try {
+            const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
+            clonedSvg.setAttribute('width', '800');
+            clonedSvg.setAttribute('height', '600');
+            clonedSvg.style.fontFamily = "'Inter', sans-serif";
+            
+            // Inline stylesheet/fonts/classes for sandboxed rendering
+            clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+            
+            const axisTexts = clonedSvg.querySelectorAll('.rc-axis-text');
+            axisTexts.forEach(t => {
+              t.setAttribute('font-size', '9.5px');
+              t.setAttribute('font-weight', '500');
+              t.setAttribute('fill', '#64748B');
+            });
+
+            const groupLabels = clonedSvg.querySelectorAll('.rc-group-label');
+            groupLabels.forEach(t => {
+              t.setAttribute('font-size', '10px');
+              t.setAttribute('font-weight', '600');
+              t.setAttribute('fill', '#0F172A');
+            });
+
+            const pieLabels = clonedSvg.querySelectorAll('.rc-pie-label-text');
+            pieLabels.forEach(t => {
+              t.setAttribute('font-size', '9.5px');
+              t.setAttribute('font-weight', '600');
+              t.setAttribute('fill', '#0F172A');
+            });
+
+            // Make gridlines grey
+            const lineElements = clonedSvg.querySelectorAll('line');
+            lineElements.forEach(l => {
+              l.setAttribute('stroke', '#E2E8F0');
+            });
+
+            // Make callout lines slate grey
+            const polylineElements = clonedSvg.querySelectorAll('polyline');
+            polylineElements.forEach(p => {
+              p.setAttribute('stroke', '#94A3B8');
+            });
+
+            // Make the center hole of donut chart white to match slide background
+            const centerHole = clonedSvg.querySelector('circle');
+            if (centerHole) {
+              centerHole.setAttribute('fill', '#FFFFFF');
+            }
+
+            // Make pie slice borders white
+            const sliceElements = clonedSvg.querySelectorAll('.rc-pie-slice');
+            sliceElements.forEach(s => {
+              s.setAttribute('stroke', '#FFFFFF');
+            });
+            
+            const svgString = new XMLSerializer().serializeToString(clonedSvg);
+            const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+            const URL = window.URL || window.webkitURL || window;
+            const blobURL = URL.createObjectURL(svgBlob);
+            
+            const image = new Image();
+            image.onload = () => {
+              const canvas = document.createElement('canvas');
+              canvas.width = 800;
+              canvas.height = 600;
+              const context = canvas.getContext('2d');
+              if (context) {
+                context.fillStyle = '#FFFFFF';
+                context.fillRect(0, 0, 800, 600);
+                context.drawImage(image, 0, 0, 800, 600);
+                resolve(canvas.toDataURL('image/png'));
+              } else {
+                reject(new Error('Canvas context failed'));
+              }
+              URL.revokeObjectURL(blobURL);
+            };
+            image.onerror = (err) => {
+              reject(err);
+              URL.revokeObjectURL(blobURL);
+            };
+            image.src = blobURL;
+          } catch (e) {
+            reject(e);
+          }
+        });
+      };
+
+      if (barSvg) {
+        const barPng = await svgToPng(barSvg);
+        slide.addImage({ data: barPng, x: 5.0, y: 4.3, w: 3.9, h: 2.5 });
+      }
+      if (pieSvg) {
+        const piePng = await svgToPng(pieSvg);
+        slide.addImage({ data: piePng, x: 9.0, y: 4.3, w: 3.9, h: 2.5 });
+      }
+
+      pptx.writeFile({ fileName: `Segment_Overview_${period}.pptx` });
+
+    } catch (error) {
+      console.error('Failed to export PPT:', error);
+      alert('Failed to generate PowerPoint slide. Check console for details.');
+    }
+  };
 
   // Called when user picks a new filter value from a dropdown
   const handleFilterChange = async (dim: string, newMember: string) => {
@@ -527,18 +965,35 @@ const RenderContent = ({ content }: { content: string }) => {
   if (parsedData) {
     // ── Segment Overview (Oracle Smart View style) ────────────────────────────
     if (parsedData.type === 'segment_overview' && parsedData.data && typeof parsedData.data === 'object' && !Array.isArray(parsedData.data)) {
+      const reportPeriod = parsedData.periodLabel || parsedData.data?.period || 'Mar-25';
       return (
-        <div className="report-container">
-          {parsedData.analysis && (
-            <div className="report-analysis">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{String(parsedData.analysis)}</ReactMarkdown>
-            </div>
-          )}
-          <SegmentOverviewReport
-            initialData={parsedData.data || {}}
-            periodLabel={parsedData.periodLabel || parsedData.data?.period || 'Mar-25'}
+        <>
+          <div className="report-container">
+            {parsedData.analysis && (
+              <div className="report-analysis">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{String(parsedData.analysis)}</ReactMarkdown>
+              </div>
+            )}
+            <SegmentOverviewReport
+              initialData={parsedData.data || {}}
+              periodLabel={reportPeriod}
+              onPovChange={(newRows, newPov) => {
+                setSegmentRows(newRows);
+                const currentCurrency = newPov.Currency || 'EUR_Reporting';
+                fetchCommentary(newRows, reportPeriod, currentCurrency);
+              }}
+              onExportFullReport={() => {
+                exportToPPT(segmentRows, reportPeriod, commentary);
+              }}
+            />
+          </div>
+          <CommentaryReport
+            commentary={commentary}
+            isLoading={isCommentaryLoading}
+            period={reportPeriod}
           />
-        </div>
+          <ReportCharts rows={segmentRows} />
+        </>
       );
     }
 

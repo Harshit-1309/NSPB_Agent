@@ -1,0 +1,248 @@
+/* ── ReportCharts.css ─────────────────────────────────────────────────────────
+   Premium SVG charts styling. Fits elegantly in both dark and light modes.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.rc-charts-container {
+  margin-top: 32px;
+  width: 100%;
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* ── Tab Controls ─────────────────────────────────────────────────────────── */
+.rc-controls {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.rc-tabs {
+  display: inline-flex;
+  background: var(--sidebar-hover, rgba(0, 0, 0, 0.05));
+  padding: 4px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.rc-tab-btn {
+  padding: 8px 20px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  background: transparent;
+}
+
+.rc-tab-btn:hover {
+  color: var(--text-main);
+}
+
+.rc-tab-btn.active {
+  background: var(--accent-gradient);
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+}
+
+/* ── Grid Layout ──────────────────────────────────────────────────────────── */
+.rc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .rc-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+.rc-chart-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  position: relative;
+}
+
+.rc-chart-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.rc-svg-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.rc-svg-bar,
+.rc-svg-pie {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* ── Bar Chart Specifics ─────────────────────────────────────────────────── */
+.rc-bar-rect {
+  transition: opacity 0.2s ease, fill 0.2s ease;
+  cursor: pointer;
+}
+
+.rc-bar-rect:hover {
+  filter: brightness(1.1);
+}
+
+.rc-axis-text {
+  font-size: 9.5px;
+  fill: var(--text-secondary);
+  font-weight: 500;
+}
+
+.rc-group-label {
+  font-size: 10px;
+  fill: var(--text-main);
+  font-weight: 600;
+}
+
+/* ── Pie Chart Specifics ─────────────────────────────────────────────────── */
+.rc-pie-slice {
+  stroke: var(--chat-bg, #10121d);
+  stroke-width: 1.5;
+  transition: opacity 0.25s ease;
+}
+
+.rc-pie-label-text {
+  font-size: 9.5px;
+  font-weight: 600;
+}
+
+.rc-callout {
+  pointer-events: none;
+  animation: fadeIn 0.4s ease;
+}
+
+/* ── Legends ──────────────────────────────────────────────────────────────── */
+.rc-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+  width: 100%;
+}
+
+.rc-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 0.2s;
+}
+
+.rc-legend-item:hover {
+  opacity: 0.8;
+}
+
+.rc-legend-item.hovered {
+  font-weight: 600;
+}
+
+.rc-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Custom mini pie legend icon */
+.rc-legend-pie-icon {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid;
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.rc-legend-pie-fill {
+  width: 6px;
+  height: 6px;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.rc-legend-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.hovered .rc-legend-label {
+  color: var(--text-main);
+}
+
+/* ── Tooltips ─────────────────────────────────────────────────────────────── */
+.rc-tooltip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  background: rgba(15, 23, 42, 0.9); /* slate-900 with alpha */
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+  animation: tooltipFade 0.15s ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.light-mode .rc-tooltip {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+}
+
+.rc-tooltip-title {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.rc-tooltip-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+}
+
+@keyframes tooltipFade {
+  from { opacity: 0; transform: translate(-50%, -90%) scale(0.95); }
+  to { opacity: 1; transform: translate(-50%, -100%) scale(1); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}

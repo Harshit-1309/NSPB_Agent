@@ -1,0 +1,158 @@
+/* ── CommentaryReport.css ─────────────────────────────────────────────────────
+   No card, no white background. Commentary floats freely below the report
+   table, transparent, inheriting the parent page background.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Outer wrapper — transparent, just spacing ───────────────────────────── */
+.cr-wrapper {
+  position: relative;
+  margin-top: 28px;
+  padding: 0 2px;
+  font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ── Dimmed while refreshing ──────────────────────────────────────────────── */
+.cr-wrapper-loading .cr-sections {
+  opacity: 0.35;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 0.2s ease;
+}
+
+/* ── Sections: two-column grid ────────────────────────────────────────────── */
+.cr-sections {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 36px;
+}
+
+@media (max-width: 860px) {
+  .cr-sections {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+/* ── Section ──────────────────────────────────────────────────────────────── */
+.cr-section {
+  min-width: 0;
+}
+
+.cr-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #cbd5e1;               /* light-grey to read on dark bg */
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+  margin: 0 0 11px 0;
+  letter-spacing: 0.01em;
+}
+
+/* ── Bullet lists ─────────────────────────────────────────────────────────── */
+.cr-list {
+  list-style: disc;
+  padding-left: 18px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.cr-sub-list {
+  list-style: disc;
+  padding-left: 20px;
+  margin: 5px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cr-bullet {
+  line-height: 1.6;
+  color: #94a3b8;               /* muted text on dark bg */
+}
+
+.cr-bullet.depth-0 { font-size: 12.5px; }
+.cr-bullet.depth-1 { font-size: 12px;   color: #7a8fa8; }
+.cr-bullet.depth-2 { font-size: 11.5px; color: #6b7fa3; }
+
+/* ── Coloured variance numbers ────────────────────────────────────────────── */
+.cr-neg {
+  color: #f87171;               /* bright red — readable on dark */
+  font-weight: 600;
+}
+
+.cr-pos {
+  color: #34d399;               /* bright green — readable on dark */
+  font-weight: 600;
+}
+
+/* ── First-time loading state ─────────────────────────────────────────────── */
+.cr-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #64748b;
+  font-size: 12.5px;
+  padding: 10px 0;
+}
+
+.cr-loading .spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── Refresh overlay pill ─────────────────────────────────────────────────── */
+.cr-refresh-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 20px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.cr-refresh-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(59, 111, 201, 0.88);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 16px;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(59, 111, 201, 0.3);
+  backdrop-filter: blur(4px);
+}
+
+.cr-refresh-pill .spin {
+  animation: spin 1s linear infinite;
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────────────── */
+.light-mode .cr-section-title {
+  color: var(--text-main, #0f172a);
+}
+
+.light-mode .cr-bullet {
+  color: var(--text-secondary, #475569);
+}
+
+.light-mode .cr-bullet.depth-1 { color: #5c6f84; }
+.light-mode .cr-bullet.depth-2 { color: #6b7d99; }
+
+.light-mode .cr-neg {
+  color: #dc2626; /* standard red for light mode */
+}
+
+.light-mode .cr-pos {
+  color: #15803d; /* standard green for light mode */
+}

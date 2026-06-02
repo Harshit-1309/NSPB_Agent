@@ -595,3 +595,50 @@
     font-size: 10px;
   }
 }
+
+/* ── Export Dropdown Styling ──────────────────────────────────────────────── */
+.so-export-container {
+  position: relative;
+}
+
+.so-export-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--table-bg, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  min-width: 180px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dark-mode .so-export-dropdown {
+  background: #1e2130;
+  border-color: #334155;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.so-export-option {
+  padding: 10px 14px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-main, #0f172a);
+  cursor: pointer;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+}
+
+.so-export-option:hover {
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.dark-mode .so-export-option:hover {
+  background: rgba(139, 92, 246, 0.15);
+}

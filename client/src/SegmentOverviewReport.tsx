@@ -200,14 +200,31 @@ function DimDropdown({
 export function SegmentOverviewReport({
   initialData,
   periodLabel,
+  onPovChange,
+  onExportFullReport,
 }: {
   initialData: SegmentOverviewData;
   periodLabel: string;
+  onPovChange?: (rows: any[], pov: Record<string, string>) => void;
+  onExportFullReport?: () => void;
 }) {
   const [data, setData] = useState<SegmentOverviewData>(initialData || { success: false, rows: [] } as any);
   const [pov, setPov] = useState<Record<string, string>>(initialData?.povDetails || {});
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const exportMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close export menu on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target as Node)) {
+        setShowExportMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   // When a filter is changed, re-fetch from /api/segment-overview/refilter
   const handleFilterChange = useCallback(async (dim: string, member: string) => {
@@ -239,13 +256,17 @@ export function SegmentOverviewReport({
 
       const fresh: SegmentOverviewData = await res.json();
       setData(fresh);
-      setPov(fresh.povDetails || {});
+      const freshPov = fresh.povDetails || {};
+      setPov(freshPov);
+
+      // Notify parent so it can regenerate commentary
+      onPovChange?.(fresh.rows || [], freshPov);
     } catch (e: any) {
       setError(e.message);
     } finally {
       setIsRefreshing(false);
     }
-  }, [pov, periodLabel, data?.filterDimensions]);
+  }, [pov, periodLabel, data?.filterDimensions, onPovChange]);
 
   const safeRows = Array.isArray(data?.rows) ? data.rows : [];
   const safeFilters = Array.isArray(data?.filterDimensions) ? data.filterDimensions : [];
@@ -295,10 +316,23 @@ export function SegmentOverviewReport({
           <h2 className="so-title">{data.reportTitle}</h2>
         </div>
         <div className="so-header-right" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button className="so-export-btn" onClick={handleExport} title="Export to Excel">
-            <FileDown size={14} />
-            <span>Export</span>
-          </button>
+          <div className="so-export-container" ref={exportMenuRef}>
+            <button className="so-export-btn" onClick={() => setShowExportMenu(!showExportMenu)} title="Export options">
+              <FileDown size={14} />
+              <span>Export</span>
+              <ChevronDown size={12} className={`so-chevron${showExportMenu ? ' open' : ''}`} style={{ marginLeft: '6px' }} />
+            </button>
+            {showExportMenu && (
+              <div className="so-export-dropdown">
+                <div className="so-export-option" onClick={() => { handleExport(); setShowExportMenu(false); }}>
+                  Export P&L Report
+                </div>
+                <div className="so-export-option" onClick={() => { onExportFullReport?.(); setShowExportMenu(false); }}>
+                  Export Full Report
+                </div>
+              </div>
+            )}
+          </div>
           {isRefreshing && (
             <div className="so-refreshing">
               <RefreshCw size={14} className="spin" />

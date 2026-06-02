@@ -7,6 +7,7 @@ import { llmAgent } from './llm/llmAgent.js';
 import oracleClient, { authStorage, rawClient } from './services/oracleClient.js';
 import { exportDataSlice } from './tools/exportDataSlice.js';
 import { segmentOverview } from './tools/segmentOverview.js';
+import { generateCommentary } from './tools/generateCommentary.js';
 import { transformationService } from './services/transformationService.js';
 import { aliasResolver } from './services/aliasResolver.js';
 
@@ -416,6 +417,50 @@ app.post('/api/segment-overview/refilter', async (req: Request, res: Response) =
     return res.json(result);
   } catch (err: any) {
     logger.error('[/api/segment-overview/refilter] Failed', { error: err.message });
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Segment Overview Commentary ──────────────────────────────────────────────
+// POST /api/segment-overview/commentary
+// Body: { rows: SegmentOverviewRow[], period: string, currency: string }
+// Generates AI commentary from already-computed segment rows — no Oracle call needed.
+app.post('/api/segment-overview/commentary', async (req: Request, res: Response) => {
+  const { rows, period, currency } = req.body;
+
+  if (!rows || !period) {
+    return res.status(400).json({ error: 'rows and period are required' });
+  }
+
+  // Map Oracle currency member names to display symbols
+  const CURRENCY_MAP: Record<string, string> = {
+    'EUR_Reporting': '€', 'EUR': '€', 'EUR_Local': '€',
+    'USD_Reporting': '$', 'USD': '$', 'USD_Local': '$',
+    'GBP_Reporting': '£', 'GBP': '£', 'GBP_Local': '£',
+    'CAD_Reporting': 'CA$', 'CAD': 'CA$',
+    'AUD_Reporting': 'A$', 'AUD': 'A$',
+    'JPY_Reporting': '¥', 'JPY': '¥',
+    'CHF_Reporting': 'CHF', 'CHF': 'CHF',
+  };
+  const currencyMember = currency || 'EUR_Reporting';
+  const currencySymbol = CURRENCY_MAP[currencyMember]
+    || Object.entries(CURRENCY_MAP).find(([k]) =>
+        currencyMember.toUpperCase().startsWith(
+          k.toUpperCase().replace('_REPORTING', '').replace('_LOCAL', '')
+        )
+      )?.[1]
+    || '€';
+
+  logger.info(`[/api/segment-overview/commentary] Generating for ${period} (${currencySymbol})`);
+
+  try {
+    const commentary = await generateCommentary(rows, period, currencySymbol);
+    if (!commentary) {
+      return res.status(500).json({ error: 'Commentary generation failed' });
+    }
+    return res.json({ success: true, commentary });
+  } catch (err: any) {
+    logger.error('[/api/segment-overview/commentary] Failed', { error: err.message });
     return res.status(500).json({ error: err.message });
   }
 });
