@@ -56,7 +56,7 @@ export class FormatterAgent {
     return str.substring(0, limit);
   }
 
-  async formatData(userIntent: string, messages: any[], modelId?: string, isAnalytical: boolean = false, gridConfig?: any): Promise<string> {
+  async formatData(userIntent: string, messages: any[], modelId?: string, isAnalytical: boolean = false, gridConfig?: any, rawToolResult?: any): Promise<string> {
     try {
       logger.info('Formatter Agent starting strict data transformation...', { isAnalytical });
       
@@ -64,17 +64,21 @@ export class FormatterAgent {
       const toolMessage = messages.slice().reverse().find(m => m.role === 'tool');
       const toolName = toolMessage?.name || '';
 
-      if (!toolMessage) {
+      if (!toolMessage && !rawToolResult) {
         // If no tool was run, this is likely a conversational request (Hi, Thanks, etc.)
         const lastAssistant = messages.slice().reverse().find(m => m.role === 'assistant' && m.content);
         return lastAssistant?.content || "I'm ready to help with your NSPB analysis.";
       }
 
       let rawData;
-      try {
-        rawData = JSON.parse(toolMessage.content);
-      } catch (e) {
-        rawData = toolMessage.content;
+      if (rawToolResult) {
+        rawData = rawToolResult;
+      } else {
+        try {
+          rawData = JSON.parse(toolMessage!.content);
+        } catch (e) {
+          rawData = toolMessage!.content;
+        }
       }
 
       // --- Specialized Formatters based on Tool Name / Intent ---
@@ -192,6 +196,63 @@ export class FormatterAgent {
               columns: ["Variable Name", "Current Value", "Plan Type"],
               rows: rows
             }
+          });
+        }
+      }
+
+      // Case: getFormData
+      if (toolName === 'getFormData') {
+        const assistantMessage = messages.slice().reverse().find(m => m.role === 'assistant' && m.tool_calls);
+        const toolCall = assistantMessage?.tool_calls?.find((tc: any) => tc.name === 'getFormData' || tc.function?.name === 'getFormData');
+        const rawArgs = toolCall?.function?.arguments || toolCall?.arguments;
+        const args = rawArgs ? (typeof rawArgs === 'string' ? JSON.parse(rawArgs) : rawArgs) : {};
+        const formName = args.idorname || "Form";
+
+        // Check if cleanData is already a formatted table, otherwise transform actualData
+        const isAlreadyFormatted = cleanData && 
+                                   Array.isArray(cleanData.columns) && 
+                                   typeof cleanData.columns[0] === 'string' &&
+                                   Array.isArray(cleanData.rows) &&
+                                   (cleanData.rows.length === 0 || !('headers' in cleanData.rows[0]));
+
+        const transformed = isAlreadyFormatted
+          ? cleanData
+          : transformationService.transformNSPBResponse(actualData);
+
+        if (transformed && !('error' in transformed)) {
+          // Unwrap grid properties from the raw actualData (standard for forms)
+          const formGrid = actualData.grid || actualData;
+          const povDimNames = formGrid.gridInfo?.povDimNames || [];
+          const pageDims = formGrid.gridInfo?.pageDimNames || ["Period", "Years"];
+          const colDimNames = formGrid.gridInfo?.columnDimNames || [];
+
+          // Build explicit dim->current-member map for page dims (using pov array offset by povDimNames length)
+          // Oracle pov array: [povDim0, povDim1, ..., pageDim0, pageDim1, ...]
+          const povByDim: Record<string, string> = {};
+          if (Array.isArray(formGrid.pov)) {
+            const pagePovOffset = povDimNames.length;
+            pageDims.forEach((dim: string, idx: number) => {
+              const povVal = formGrid.pov[pagePovOffset + idx];
+              if (povVal) povByDim[dim] = povVal;
+            });
+          }
+
+          return JSON.stringify({
+            type: "report",
+            analysis: `# Form Data: ${formName}\nSuccessfully retrieved data from the form.`,
+            table: transformed,
+            gridConfig: {
+              type: "form",
+              idorname: formName,
+              pov: formGrid.pov || null,
+              povDimNames: povDimNames,
+              pageDimNames: pageDims,
+              columnDimNames: colDimNames,
+              povByDim: povByDim,
+              pageMbrList: args.pageMbrList || "",
+              allowedPageMembersByDim: formGrid.gridInfo?.allowedPageMembersByDim || null
+            },
+            filters: pageDims
           });
         }
       }

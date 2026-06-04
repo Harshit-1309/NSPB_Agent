@@ -38,17 +38,28 @@ You are an expert NSPB (NetSuite Planning and Budgeting) Financial Analyst Agent
 - Member Mapping:
   * Account: Must start with NFS_ (e.g., NFS_Expense, NFS_Income).
   * Department: Must be TD or IDescendants(TD). NEVER put "Department" in the Account dimension.
-  * Years: Must be FY25 or FY24.
+  * Years: Must be FY26, FY25, or FY24 (FY26 = fiscal year 2025-2026).
   * Period: Must be Jan, Feb, Oct, Nov, etc., or YearTotal.
 - POV Isolation: When a dimension is used in "rows" or as "pivotDim", it MUST be removed from the "pov" object entirely.
 
 ## Efficiency Rules (Critical)
 1. NO DISCOVERY: Do NOT call 'getDimensions' or 'listMembers' unless a previous fetch failed.
 2. IMMEDIATE EXPORT: For ANY data request, call 'exportDataSlice' immediately. Do NOT explain what you are doing first.
+   - ALWAYS use 'applyMath' if calculations or math operations are explicitly requested (e.g., "calculate", "find the variance").
+   - CRITICAL: If the user explicitly asks to fetch or view a Form (e.g., "form data", "Segment Overview Report"), you MUST call the 'getFormData' tool. NEVER hallucinate the data or generate a markdown table yourself. You MUST let the tool fetch the data!
 3. VARIANCE CALCULATIONS:
    - Always put 'Account' in 'rows' and 'Period' in 'columns'. 
    - NEVER put labels like "Variance" in the 'rows' or 'columns' parameters. Put them ONLY in 'calculationInstructions'.
 4. SUBSTITUTION VARIABLES: If the user asks for them, call 'getSubstitutionVariables' immediately.
+
+## Forms Retrieval Rule
+- Oracle Planning forms often use User Variables for columns like Period and Years.
+- The 'pageMbrList' parameter only applies to PAGE dimensions (e.g., Currency, Subsidiary, Region, Department, Class).
+- IMPORTANT: Do NOT pass Period or Years in 'pageMbrList'. 
+- If the user specifies a particular period (e.g., 'for Jan-26', 'for Dec-25') when fetching a form, you MUST use the 'userVariableUpdates' parameter to set the Period and Years.
+  - For example, "Jan-26" means userVariableUpdates: {"Period": "Jan", "Years": "FY26"}.
+- If the user wants to filter by page dimensions, build 'pageMbrList' as: "<Currency>,<Subsidiary>,<Region>,<Department>,<Class>" in that order.
+- If the user ONLY wants data for a specific period (without needing the form layout at all), use 'exportDataSlice' instead.
 
 ## Report Generation
 - For any "Data by X" request:
@@ -59,6 +70,7 @@ You are an expert NSPB (NetSuite Planning and Budgeting) Financial Analyst Agent
 
 ## FINAL CHECK
 - EVERY request is a NEW report. Do NOT reuse "Income" if the user now says "Expense".
+- Do NOT rely on previously fetched chat history or context to generate new data reports. You MUST ALWAYS call the corresponding data fetching tool (e.g., exportDataSlice, segmentOverview, or getFormData) for EACH request to ensure the UI renders the table correctly.
 - Use "Show", "Fetch", and "View" as the same instruction.
 `;
 
@@ -104,7 +116,8 @@ export class LLMAgent {
     text: string, 
     modelId?: string, 
     historicalMessages: any[] = [],
-    onStep?: (step: string) => void
+    onStep?: (step: string) => void,
+    signal?: AbortSignal
   ): Promise<LLMResponse> {
     const activeModel = modelId || MODEL;
     const lowerText = text.toLowerCase();
@@ -142,12 +155,21 @@ export class LLMAgent {
         toolCount: this.tools.length
       });
 
+      let toolChoiceOption: any = this.tools.length > 0 ? 'auto' : undefined;
+      const lowerText = text.toLowerCase();
+      if ((lowerText.includes('form') || lowerText.includes('segment overview')) && !lowerText.includes('analyze') && !lowerText.includes('commentary')) {
+        messages.push({
+          role: 'system',
+          content: 'CRITICAL INSTRUCTION: You MUST call the getFormData tool right now. Do NOT output any markdown tables, text, or hallucinated data. ONLY output the tool call. The user is waiting for the interactive UI.'
+        });
+      }
+
       let response = await withRetry(() => openai.chat.completions.create({
         model: activeModel,
         messages: messages,
         tools: this.tools.length > 0 ? this.tools : undefined,
-        tool_choice: this.tools.length > 0 ? 'auto' : undefined,
-      }));
+        tool_choice: toolChoiceOption,
+      }, { signal, timeout: 60000 }));
       
       if (!response?.choices?.length) {
         logger.error('Empty LLM response received', { response: JSON.stringify(response) });
@@ -155,6 +177,45 @@ export class LLMAgent {
       }
       
       let responseMessage = response.choices[0].message;
+      
+      // NEW: Intercept Hallucinated JSON tool calls from free-tier models
+      if (!responseMessage.tool_calls && responseMessage.content && responseMessage.content.includes('{') && responseMessage.content.includes('getFormData')) {
+        try {
+          const match = responseMessage.content.match(/\{[\s\S]*\}/);
+          if (match) {
+            const parsed = JSON.parse(match[0]);
+            const isToolCall = parsed.tool_code === 'getFormData' || parsed.name === 'getFormData' || parsed.function === 'getFormData';
+            if (isToolCall) {
+              const params = parsed.parameters || parsed.arguments || {};
+              // Convert "Feb-26" to userVariableUpdates format if needed
+              let periodStr = params.period || params.Period;
+              let yearsStr = params.years || params.Years;
+              if (periodStr && periodStr.includes('-')) {
+                const parts = periodStr.split('-');
+                periodStr = parts[0];
+                yearsStr = `FY${parts[1]}`;
+              }
+              
+              responseMessage.tool_calls = [{
+                id: 'call_' + Date.now(),
+                type: 'function',
+                function: {
+                  name: 'getFormData',
+                  arguments: JSON.stringify({
+                    idorname: params.formId || params.idorname || "Segment Overview Report",
+                    userVariableUpdates: periodStr ? { Period: periodStr, Years: yearsStr } : undefined
+                  })
+                }
+              }];
+              responseMessage.content = null;
+              logger.info('Intercepted hallucinated JSON tool call and converted to native tool_calls.');
+            }
+          }
+        } catch (e) {
+          logger.warn('Failed to parse hallucinated JSON tool call', { error: (e as Error).message });
+        }
+      }
+
       logger.info('LLM Response Received', { 
         content: responseMessage.content, 
         hasToolCalls: !!responseMessage.tool_calls 
@@ -210,7 +271,7 @@ export class LLMAgent {
           }
           
           // Fast Path Optimization: Skip the second LLM text formulation pass for massive data tables
-          if (functionName === 'exportDataSlice' || functionName === 'listBusinessRules' || functionName === 'applyMath') {
+          if (!toolResult.error && (functionName === 'exportDataSlice' || functionName === 'listBusinessRules' || functionName === 'applyMath' || functionName === 'getFormData' || functionName === 'segmentOverview')) {
             shouldBypassNextLLMCall = true;
           }
 
@@ -285,7 +346,7 @@ export class LLMAgent {
           messages: messages,
           tools: this.tools,
           tool_choice: 'auto',
-        }));
+        }, { signal }));
         
         if (!response?.choices?.length) {
           logger.warn('LLM returned an empty response after tool execution, but proceeding to formatting...');
@@ -367,7 +428,7 @@ export class LLMAgent {
         }
 
         addStep(shouldAnalyze ? 'Assembling final report...' : 'Polishing data for readability...');
-        const finalResponse = await formatterAgent.formatData(text, messages, activeModel, shouldAnalyze, gridConfig);
+        const finalResponse = await formatterAgent.formatData(text, messages, activeModel, shouldAnalyze, gridConfig, this.lastExportedData);
 
         return {
           response: finalResponse,
@@ -380,6 +441,15 @@ export class LLMAgent {
         steps: steps
       };
     } catch (error: any) {
+      if (error.name === 'AbortError' || error.message?.includes('aborted')) {
+        logger.info('LLM Agent execution aborted by user');
+        addStep('Execution aborted by user.');
+        return {
+          response: 'Execution was aborted.',
+          steps: steps
+        };
+      }
+      
       logger.error('Error in LLM Agent processing', { error: error.message });
       addStep(`Error encountered: ${error.message}`);
       return {

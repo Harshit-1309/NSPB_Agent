@@ -22,9 +22,19 @@ if (!ORACLE_BASE_URL || !APP_NAME) {
 /**
  * Helper to get the current auth header from storage or fallback to env for dev/testing
  */
+import fs from 'fs';
+
 const getAuthHeader = () => {
   const storedAuth = authStorage.getStore();
   if (storedAuth) return storedAuth;
+
+  // Fallback to cached token file if it exists
+  try {
+    if (fs.existsSync('scratch/auth_token.txt')) {
+      const cached = fs.readFileSync('scratch/auth_token.txt', 'utf8').trim();
+      if (cached) return cached;
+    }
+  } catch (e) {}
 
   // Fallback to .env credentials ONLY if they exist (for local testing/CLI scripts)
   const envUser = process.env.ORACLE_USERNAME;

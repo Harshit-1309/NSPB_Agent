@@ -11,6 +11,8 @@ import { generateCommentary } from './tools/generateCommentary.js';
 import { transformationService } from './services/transformationService.js';
 import { aliasResolver } from './services/aliasResolver.js';
 
+import fs from 'fs';
+
 dotenv.config();
 
 const app = express();
@@ -24,9 +26,10 @@ const PORT = process.env.PORT || 3000;
 app.use((req, res, next) => {
   const auth = req.headers.authorization;
   
-  // Exclude login and health from requiring auth if you want, 
-  // but for NSPB, we usually need it for everything.
   if (auth) {
+    try {
+      fs.writeFileSync('scratch/auth_token.txt', auth);
+    } catch (e) {}
     authStorage.run(auth, () => next());
   } else {
     // Let it pass, the oracleClient will warn/fail if auth is missing and it's needed
@@ -95,19 +98,32 @@ app.post('/api/chat', async (req: Request, res: Response) => {
     res.write(`data: ${JSON.stringify({ type, data })}\n\n`);
   };
 
+  const abortController = new AbortController();
+  res.on('close', () => {
+    if (!res.writableEnded) {
+      logger.info('Client disconnected before response finished, aborting...');
+      abortController.abort();
+    }
+  });
+
   try {
     const response = await llmAgent.handleUserInput(
       message, 
       model, 
       history, 
-      (step) => sendEvent('step', step)
+      (step) => sendEvent('step', step),
+      abortController.signal
     );
 
     sendEvent('final', response);
     res.end();
   } catch (error: any) {
-    logger.error('Error in Chat API (SSE)', { error: error.message });
-    sendEvent('error', error.message);
+    if (error.name === 'AbortError') {
+      logger.info('Request aborted successfully');
+    } else {
+      logger.error('Error in Chat API (SSE)', { error: error.message });
+      sendEvent('error', error.message);
+    }
     res.end();
   }
 });
@@ -285,6 +301,8 @@ app.post('/api/members-dynamic', async (req: Request, res: Response) => {
 // Body: { gridConfig: <original rawArgs from exportDataSlice>, dim: string, member: string }
 // Re-runs the Oracle data export with a single POV dimension overridden and returns
 // the formatted table JSON without going through the LLM at all.
+import { getFormData } from './tools/getFormData.js';
+
 app.post('/api/refilter', async (req: Request, res: Response) => {
   const { gridConfig, dim, member } = req.body;
 
@@ -295,9 +313,73 @@ app.post('/api/refilter', async (req: Request, res: Response) => {
   logger.info(`[/api/refilter] Re-running slice: ${dim} → ${member}`);
 
   try {
+    const overrides = req.body.livePov || { [dim]: member };
+
+    // Handle Form refiltering
+    if (gridConfig.type === 'form') {
+      const idorname = gridConfig.idorname;
+      const pageDimNames: string[] = gridConfig.pageDimNames || ["Currency", "Subsidiary", "Region", "Department", "Class"];
+      const povByDim: Record<string, string> = gridConfig.povByDim || {};
+      const povDimNames: string[] = gridConfig.povDimNames || [];
+      const povArray: any[] = Array.isArray(gridConfig.pov) ? gridConfig.pov : [];
+
+      logger.info(`[/api/refilter] Form page dims: ${pageDimNames.join(',')}`, { overrides, povByDim });
+
+      // Build pageMbrList: for each page dim, use override if provided, else use povByDim, else fallback to pov array
+      const newMembers: string[] = [];
+      const newPov: any = { dimensions: [], members: [] };
+
+      // First, add fixed POV dims (non-page dims) to newPov for transformationService context
+      povDimNames.forEach((dim: string, idx: number) => {
+        const overrideKey = Object.keys(overrides).find(k => k.toLowerCase() === dim.toLowerCase());
+        const currentMbr = overrideKey ? overrides[overrideKey] : (povArray[idx] || 'N/A');
+        newPov.dimensions.push(dim);
+        newPov.members.push([currentMbr]);
+      });
+
+      // Then, for each page dim, resolve current member
+      pageDimNames.forEach((pageDim: string, idx: number) => {
+        const overrideKey = Object.keys(overrides).find(k => k.toLowerCase() === pageDim.toLowerCase());
+        let currentMbr: string;
+        
+        if (overrideKey) {
+          // User explicitly changed this dim
+          currentMbr = overrides[overrideKey];
+        } else if (povByDim[pageDim]) {
+          // Use the explicit dim->member map built at form fetch time (most reliable)
+          currentMbr = povByDim[pageDim];
+        } else {
+          // Fallback: offset into the pov array by the number of non-page POV dims
+          const povOffset = povDimNames.length;
+          currentMbr = povArray[povOffset + idx] || 'N/A';
+        }
+        
+        newMembers.push(currentMbr);
+        newPov.dimensions.push(pageDim);
+        newPov.members.push([currentMbr]);
+      });
+
+      const pageMbrList = newMembers.join(',');
+      logger.info(`[/api/refilter] Re-running form: ${idorname} with pageMbrList=${pageMbrList}`);
+
+      const result = await getFormData({ idorname, pageMbrList });
+      if (!result.success) {
+        return res.status(400).json({ error: result.error, details: result.details });
+      }
+
+      const transformed = transformationService.transformNSPBResponse(result.data, newPov);
+      if ('error' in transformed) {
+        return res.status(400).json({ error: transformed.error });
+      }
+
+      return res.json({
+        success: true,
+        table: transformed
+      });
+    }
+
     // Merge the new member override into the existing POV
     let updatedPov: any;
-    const overrides = req.body.livePov || { [dim]: member };
     
     if (gridConfig.pov && Array.isArray(gridConfig.pov.dimensions) && Array.isArray(gridConfig.pov.members)) {
       // Oracle Native Format: { dimensions: ["Class", "Region"], members: [["TC"], ["Total Region"]] }

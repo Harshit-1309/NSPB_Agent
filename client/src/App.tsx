@@ -3,7 +3,7 @@ import {
   Plus, Send, User, Star, Monitor, Trash2, ChevronDown, ChevronRight, Sun, Moon,
   Copy, FileDown, Check, FileText, Table as TableIcon, Home,
   BarChart, Settings, Zap, Database, ArrowRight,
-  Columns, Edit2, XCircle,
+  Columns, Edit2, XCircle, Square,
   PieChart, Users
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -242,10 +242,10 @@ const MODELS = [
 const HomeView = ({ onAction }: { onAction: (text: string) => void }) => {
   const actions = [
     {
-      title: "Revenue Analysis",
-      desc: "Analyze income and variance for the current quarter.",
-      icon: <BarChart size={20} />,
-      prompt: "Perform a deep analysis of revenue variance for FY25, Oct to Dec."
+      title: "Form Data",
+      desc: "Fetch interactive grids from Oracle forms.",
+      icon: <Database size={20} />,
+      prompt: "Fetch form data for form 'Segment Overview Report' for Feb-26"
     },
     {
       title: "Substitution Variables",
@@ -341,10 +341,21 @@ const FilterDropdown = ({
   const open = async () => {
     setIsOpen(v => !v);
     if (isOpen) return; // If we are closing, don't fetch
+
+    // If allowed members are already provided in gridConfig (e.g. for Forms), use them directly!
+    if (gridConfig?.type === 'form' && gridConfig.allowedPageMembersByDim?.[dim]) {
+      const items = gridConfig.allowedPageMembersByDim[dim].map((m: string) => ({
+        name: m,
+        alias: m
+      }));
+      setMembers(items);
+      return;
+    }
+
     setLoading(true);
     try {
       let res;
-      if (gridConfig) {
+      if (gridConfig && gridConfig.type !== 'form') {
         // Dynamic fetch: passes gridConfig to Oracle to run the grid and suppress members with no data!
         res = await fetch(`${API_BASE_URL}/api/members-dynamic`, {
           method: 'POST',
@@ -354,8 +365,10 @@ const FilterDropdown = ({
           },
           body: JSON.stringify({ dim, gridConfig, livePov })
         });
-      } else {
-        // Fallback: static fetch of all descendants
+      }
+      
+      // Fallback: static fetch of all descendants if dynamic failed or is not applicable
+      if (!res || !res.ok) {
         res = await fetch(`${API_BASE_URL}/api/members?dim=${encodeURIComponent(dim)}`, {
           headers: { 
             'Authorization': localStorage.getItem('nspb_token') || ''
@@ -363,7 +376,7 @@ const FilterDropdown = ({
         });
       }
       
-      if (res.ok) {
+      if (res && res.ok) {
         const data = await res.json();
         const items = (data.items || []).map((m: any) => ({
           name: m.name || m.memberName || m,
@@ -496,6 +509,21 @@ const RenderContent = ({ content }: { content: string }) => {
       parsedData = JSON.parse(content); 
     }
   } catch (e) { /* not JSON */ }
+
+  // Sync livePov state with parsed table povDetails on content load
+  useEffect(() => {
+    // For forms: prefer gridConfig.povByDim (explicit page dim->member map)
+    // so dropdown labels correctly show current page member selections
+    if (parsedData?.gridConfig?.type === 'form' && parsedData?.gridConfig?.povByDim) {
+      setLivePov(parsedData.gridConfig.povByDim);
+    } else if (parsedData?.table?.povDetails) {
+      setLivePov(parsedData.table.povDetails);
+    } else {
+      setLivePov({});
+    }
+    // Reset liveTable when content changes (new query/message)
+    setLiveTable(null);
+  }, [content]);
 
   const fetchCommentary = useCallback(async (rows: any[], period: string, currency: string) => {
     setIsCommentaryLoading(true);
@@ -926,7 +954,7 @@ const RenderContent = ({ content }: { content: string }) => {
     const gridConfig = parsedData?.gridConfig;
     const updatedPovState = { ...livePov, [dim]: newMember };
 
-    // Optimistically update label
+    // Optimistically update label immediately
     setLivePov(updatedPovState);
 
     if (!gridConfig) {
@@ -948,12 +976,23 @@ const RenderContent = ({ content }: { content: string }) => {
         const data = await res.json();
         if (data.success && data.table) {
           setLiveTable(data.table);
-          if (data.table.povDetails) {
+          // Update livePov: for forms use page dims only, otherwise use returned povDetails
+          if (gridConfig.type === 'form' && gridConfig.pageDimNames) {
+            // Merge only page dimension updates from the returned povDetails
+            const pagePovUpdate: Record<string, string> = {};
+            (gridConfig.pageDimNames as string[]).forEach((d: string) => {
+              if (data.table.povDetails?.[d]) pagePovUpdate[d] = data.table.povDetails[d];
+            });
+            setLivePov(prev => ({ ...prev, ...pagePovUpdate, [dim]: newMember }));
+          } else if (data.table.povDetails) {
             setLivePov(prev => ({ ...prev, ...data.table.povDetails, [dim]: newMember }));
           }
+        } else {
+          console.error('Refilter returned no table:', data);
         }
       } else {
-        console.error('Refilter failed:', await res.text());
+        const errText = await res.text();
+        console.error('Refilter failed:', errText);
       }
     } catch (e) {
       console.error('Refilter error:', e);
@@ -1177,7 +1216,7 @@ const MessageItem = ({ msg, theme, onEdit }: { msg: Message; theme: string; onEd
           <RenderContent content={msg.content} />
 
           {msg.steps && msg.steps.length > 0 && (
-            <details className="execution-steps-details">
+            <details className="execution-steps-details" open>
               <summary className="execution-steps-header">
                 <Monitor size={14} />
                 <span>Execution Logs</span>
@@ -1646,9 +1685,15 @@ try {
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSend())}
                 placeholder="Message NSPB Agent..."
               />
-              <div className={`send-btn ${!input.trim() || isLoading ? 'disabled' : ''}`} onClick={handleSend}>
-                <Send size={18} />
-              </div>
+              {isLoading ? (
+                <div className="stop-btn" onClick={() => abortControllerRef.current?.abort()} title="Stop Generation">
+                  <Square size={16} fill="currentColor" />
+                </div>
+              ) : (
+                <div className={`send-btn ${!input.trim() ? 'disabled' : ''}`} onClick={handleSend}>
+                  <Send size={18} />
+                </div>
+              )}
             </div>
           </div>
         )}

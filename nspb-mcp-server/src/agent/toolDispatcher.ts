@@ -12,6 +12,7 @@ import { runBusinessRule } from '../tools/runBusinessRule.js';
 import { executeJob } from '../tools/executeJob.js';
 import { runDataRule } from '../tools/runDataRule.js';
 import { segmentOverview } from '../tools/segmentOverview.js';
+import { getFormData } from '../tools/getFormData.js';
 import logger from '../services/logger.js';
 
 export const TOOLS_REGISTRY = [
@@ -143,6 +144,19 @@ export const TOOLS_REGISTRY = [
       },
       required: ['periodLabel']
     }
+  },
+  {
+    name: 'getFormData',
+    description: 'Extract data from a specific form in the NSPB application by providing the form name or ID. Supports selecting specific page dimension members (like Period and Years) via pageMbrList, and updating user variables (like for dynamic columns) via userVariableUpdates.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        idorname: { type: 'string', description: 'Form name or form ID' },
+        pageMbrList: { type: 'string', description: 'Optional comma-separated list of page/POV dimension members to filter by (e.g. "FY25,Jan")' },
+        userVariableUpdates: { type: 'object', description: 'Map of Dimension to Member name for updating user variables before fetching data (e.g. {"Period": "Dec", "Years": "FY25"}). Use this when the form relies on user variables for its layout.' }
+      },
+      required: ['idorname']
+    }
   }
 ];
 
@@ -178,6 +192,8 @@ export async function executeTool(name: string, args: any): Promise<any> {
       return await runDataRule(args);
     case 'segmentOverview':
       return await segmentOverview(args);
+    case 'getFormData':
+      return await getFormData(args);
     default:
       throw new Error(`Tool ${name} not found in dispatcher`);
   }

@@ -1,3 +1,5 @@
+import fs from 'fs';
+
 /**
  * Transformation Logic for NSPB Raw Data
  * Transforms raw Oracle NSPB dimension and data slice responses into a clean, minimal tabular format.
@@ -26,9 +28,12 @@ export class TransformationService {
         return { error: 'Unable to format NSPB response: Input is null or undefined' };
       }
 
-      // Check if it's a grid-style response (from exportDataSlice)
-      if (rawData.rows && rawData.columns) {
-        return this.formatGridData(rawData, pov, aliasMap, rowDimensions);
+      // If the response is wrapped in a "grid" property (e.g. from EPM forms API), unwrap it
+      const gridData = rawData.grid ? rawData.grid : rawData;
+
+      // Check if it's a grid-style response
+      if (gridData.rows && gridData.columns) {
+        return this.formatGridData(gridData, pov, aliasMap, rowDimensions);
       }
 
       // Check if it's a members or rules list response
@@ -38,6 +43,14 @@ export class TransformationService {
 
       return { error: 'Unable to format NSPB response: Unrecognized data structure' };
     } catch (error: any) {
+      try {
+        fs.writeFileSync('scratch/last_error.json', JSON.stringify({
+          error: error.message,
+          stack: error.stack,
+          rawDataKeys: rawData ? Object.keys(rawData) : null,
+          rawDataSample: rawData ? JSON.stringify(rawData).substring(0, 4000) : null
+        }, null, 2));
+      } catch (e) {}
       return { error: `Unable to format NSPB response: ${error.message}` };
     }
   }
@@ -76,21 +89,37 @@ export class TransformationService {
     
     // 3. Extract ALL POV Context
     const povDetails: Record<string, string> = {};
-    if (pov && pov.dimensions && pov.members) {
-      pov.dimensions.forEach((dim: string, idx: number) => {
-        // Skip dimensions that are already in columns (to avoid redundancy)
-        if (colNames.includes(dim)) return;
+    const effectivePov = pov || rawData.pov;
+    if (effectivePov) {
+      if (effectivePov.dimensions && effectivePov.members) {
+        effectivePov.dimensions.forEach((dim: string, idx: number) => {
+          // Skip dimensions that are already in columns (to avoid redundancy)
+          if (colNames.includes(dim)) return;
+          
+          const member = effectivePov.members[idx] ? (Array.isArray(effectivePov.members[idx]) ? effectivePov.members[idx][0] : effectivePov.members[idx]) : "N/A";
+          povDetails[aliasMap[dim] || dim] = aliasMap[member] || member;
+        });
+      } else if (Array.isArray(effectivePov)) {
+        // EPM Forms array style: pov is ["NSP_Base", "NSP_Total Location", ...]
+        const povDimNames = rawData.gridInfo?.povDimNames || [];
+        const pageDimNames = rawData.gridInfo?.pageDimNames || [];
+        const allDims = [...povDimNames, ...pageDimNames];
         
-        const member = pov.members[idx] ? (Array.isArray(pov.members[idx]) ? pov.members[idx][0] : pov.members[idx]) : "N/A";
-        povDetails[aliasMap[dim] || dim] = aliasMap[member] || member;
-      });
+        allDims.forEach((dim: string, idx: number) => {
+          if (colNames.includes(dim)) return;
+          const member = effectivePov[idx] || "N/A";
+          povDetails[aliasMap[dim] || dim] = aliasMap[member] || member;
+        });
+      }
     }
     
     // 4. Identify the Row Dimension dynamically
     let rowDimLabel = "Member";
     
     // Check if the grid response includes dimension names for rows
-    if (rawData.rows?.[0]?.dimensions?.[0]) {
+    if (rawData.gridInfo?.rowDimNames) {
+      rowDimLabel = rawData.gridInfo.rowDimNames.map((d: string) => aliasMap[d] || d).join(' | ');
+    } else if (rawData.rows?.[0]?.dimensions?.[0]) {
       const rowDim = rawData.rows[0].dimensions[0];
       rowDimLabel = aliasMap[rowDim] || rowDim;
     } else if (rowDimensions && rowDimensions.length > 0) {
@@ -135,14 +164,19 @@ export class TransformationService {
 
       colNames.forEach((col: string, index: number) => {
         const val = row.data[index];
-        if (val === null || val === undefined || val === '' || val === '#Missing') {
+        let cellVal = val;
+        if (val !== null && typeof val === 'object') {
+          cellVal = val.value !== undefined ? val.value : (val.formattedValue !== undefined ? val.formattedValue : val);
+        }
+
+        if (cellVal === null || cellVal === undefined || cellVal === '' || cellVal === '#Missing') {
           rowData[col] = 0;
         } else {
-          const num = Number(val);
-          if (!isNaN(num) && typeof val !== 'boolean') {
+          const num = Number(cellVal);
+          if (!isNaN(num) && typeof cellVal !== 'boolean') {
             rowData[col] = Math.round(num * 100) / 100; // Keep 2 decimals for financial data
           } else {
-            rowData[col] = val;
+            rowData[col] = cellVal;
           }
         }
       });

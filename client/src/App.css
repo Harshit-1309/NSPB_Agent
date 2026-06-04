@@ -1283,6 +1283,30 @@ textarea {
   opacity: 0.5;
 }
 
+.stop-btn {
+  position: absolute;
+  right: 12px;
+  bottom: 8px;
+  background: transparent;
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stop-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-color: #ef4444;
+  transform: scale(1.05) translateY(-1px);
+}
+
 .footer-text {
   font-size: 11px;
   color: var(--text-secondary);
