@@ -155,28 +155,62 @@ export class LLMAgent {
         toolCount: this.tools.length
       });
 
-      let toolChoiceOption: any = this.tools.length > 0 ? 'auto' : undefined;
       const lowerText = text.toLowerCase();
-      if ((lowerText.includes('form') || lowerText.includes('segment overview')) && !lowerText.includes('analyze') && !lowerText.includes('commentary')) {
-        messages.push({
-          role: 'system',
-          content: 'CRITICAL INSTRUCTION: You MUST call the getFormData tool right now. Do NOT output any markdown tables, text, or hallucinated data. ONLY output the tool call. The user is waiting for the interactive UI.'
-        });
-      }
+      const isFormRequest = (lowerText.includes('form') || lowerText.includes('segment overview')) && !lowerText.includes('analyze') && !lowerText.includes('commentary');
+      let responseMessage: any = null;
+      let response: any = null;
 
-      let response = await withRetry(() => openai.chat.completions.create({
-        model: activeModel,
-        messages: messages,
-        tools: this.tools.length > 0 ? this.tools : undefined,
-        tool_choice: toolChoiceOption,
-      }, { signal, timeout: 60000 }));
-      
-      if (!response?.choices?.length) {
-        logger.error('Empty LLM response received', { response: JSON.stringify(response) });
-        throw new Error('LLM returned an empty response (no choices).');
+      if (isFormRequest) {
+        let interceptedFormId = 'Segment Overview Report';
+        let interceptedPeriod = 'YearTotal';
+        let interceptedYears = 'FY25';
+
+        // Try to find the exact form name inside quotes
+        const quoteMatch = text.match(/(?:form|report).*?['"]([^'"]+)['"]/i);
+        if (quoteMatch) {
+          interceptedFormId = quoteMatch[1].trim();
+        } else if (lowerText.includes('segment overview')) {
+          interceptedFormId = 'Segment Overview Report';
+        }
+
+        const periodMatch = text.match(/([A-Z][a-z]{2})\s*-\s*(\d{2})/i);
+        if (periodMatch) {
+          interceptedPeriod = periodMatch[1];
+          interceptedYears = `FY${periodMatch[2]}`;
+        }
+
+        responseMessage = {
+          role: 'assistant',
+          content: null,
+          tool_calls: [{
+            id: 'call_' + Date.now(),
+            type: 'function',
+            function: {
+              name: 'getFormData',
+              arguments: JSON.stringify({
+                idorname: interceptedFormId,
+                userVariableUpdates: { Period: interceptedPeriod, Years: interceptedYears }
+              })
+            }
+          }]
+        };
+        logger.info('Bypassed LLM Pass 1 and directly injected getFormData tool call.', { interceptedFormId, interceptedPeriod, interceptedYears });
+      } else {
+        let toolChoiceOption: any = this.tools.length > 0 ? 'auto' : undefined;
+        response = await withRetry(() => openai.chat.completions.create({
+          model: activeModel,
+          messages: messages,
+          tools: this.tools.length > 0 ? this.tools : undefined,
+          tool_choice: toolChoiceOption,
+        }, { signal, timeout: 60000 }));
+        
+        if (!response?.choices?.length) {
+          logger.error('Empty LLM response received', { response: JSON.stringify(response) });
+          throw new Error('LLM returned an empty response (no choices).');
+        }
+        
+        responseMessage = response.choices[0].message;
       }
-      
-      let responseMessage = response.choices[0].message;
       
       // NEW: Intercept Hallucinated JSON tool calls from free-tier models
       if (!responseMessage.tool_calls && responseMessage.content && responseMessage.content.includes('{') && responseMessage.content.includes('getFormData')) {

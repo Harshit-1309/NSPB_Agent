@@ -154,7 +154,7 @@ const downloadFile = (blob: Blob, fileName: string) => {
   window.URL.revokeObjectURL(url);
 };
 
-const handleExport = (type: 'csv' | 'excel' | 'pdf', content: string) => {
+const handleExport = (type: 'csv' | 'excel' | 'pdf' | 'ppt', content: string) => {
   let tableData: any = null;
   try {
     const data = JSON.parse(content);
@@ -168,7 +168,87 @@ const handleExport = (type: 'csv' | 'excel' | 'pdf', content: string) => {
     const { columns, rows } = tableData;
 
     if (type === 'csv' || type === 'excel') {
-      const worksheet = XLSX.utils.json_to_sheet(rows, { header: columns });
+      let worksheet;
+      const parsedCols = columns.map((c: string) => c.split(' | '));
+      const maxDepth = Math.max(...parsedCols.map((p: any) => p.length));
+      
+      if (maxDepth > 1 && type === 'excel') {
+        const aoa = [];
+        
+        // Build header rows
+        for (let depth = 0; depth < maxDepth; depth++) {
+          const headerRow = [];
+          for (let colIdx = 0; colIdx < parsedCols.length; colIdx++) {
+            const parts = parsedCols[colIdx];
+            if (parts.length === 1) {
+              headerRow.push(depth === 0 ? parts[0] : null);
+            } else {
+              headerRow.push(depth < parts.length ? parts[depth] : null);
+            }
+          }
+          aoa.push(headerRow);
+        }
+        
+        // Build data rows
+        rows.forEach((row: any) => {
+          const dataRow = columns.map((col: string) => {
+             const value = row[col] !== undefined ? row[col] :
+               row[Object.keys(row).find((k: string) => k.toLowerCase() === col.toLowerCase()) || ''];
+             return typeof value === 'number' ? value : (value ?? '');
+          });
+          aoa.push(dataRow);
+        });
+        
+        worksheet = XLSX.utils.aoa_to_sheet(aoa);
+        
+        // Add merges for beautiful Excel formatting
+        const merges = [];
+        for (let colIdx = 0; colIdx < parsedCols.length; colIdx++) {
+          if (parsedCols[colIdx].length === 1) {
+             merges.push({ s: { r: 0, c: colIdx }, e: { r: maxDepth - 1, c: colIdx } });
+          }
+        }
+        for (let depth = 0; depth < maxDepth; depth++) {
+          let startCol = -1;
+          let currentVal = null;
+          for (let colIdx = 0; colIdx < parsedCols.length; colIdx++) {
+             const parts = parsedCols[colIdx];
+             if (parts.length > 1 && depth < parts.length) {
+                const val = parts[depth];
+                let parentsMatch = true;
+                if (startCol !== -1) {
+                  for (let p = 0; p < depth; p++) {
+                    if (parsedCols[startCol][p] !== parts[p]) {
+                      parentsMatch = false; break;
+                    }
+                  }
+                }
+                if (startCol === -1) {
+                  startCol = colIdx; currentVal = val;
+                } else if (val === currentVal && parentsMatch) {
+                  // continue span
+                } else {
+                  if (colIdx - 1 > startCol) {
+                    merges.push({ s: { r: depth, c: startCol }, e: { r: depth, c: colIdx - 1 } });
+                  }
+                  startCol = colIdx; currentVal = val;
+                }
+             } else {
+                if (startCol !== -1 && colIdx - 1 > startCol) {
+                  merges.push({ s: { r: depth, c: startCol }, e: { r: depth, c: colIdx - 1 } });
+                }
+                startCol = -1;
+             }
+          }
+          if (startCol !== -1 && parsedCols.length - 1 > startCol) {
+             merges.push({ s: { r: depth, c: startCol }, e: { r: depth, c: parsedCols.length - 1 } });
+          }
+        }
+        worksheet['!merges'] = merges;
+      } else {
+        worksheet = XLSX.utils.json_to_sheet(rows, { header: columns });
+      }
+
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
 
@@ -195,6 +275,121 @@ const handleExport = (type: 'csv' | 'excel' | 'pdf', content: string) => {
         startY: 20,
       });
       doc.save(`${fileName}.pdf`);
+    } else if (type === 'ppt') {
+      const pptx = new pptxgen();
+      pptx.layout = 'LAYOUT_16x9'; // 10 x 5.625 inches
+      const slide = pptx.addSlide();
+      slide.addText("Exported Data", { x: 0.2, y: 0.1, w: "90%", fontSize: 14, bold: true, color: '333333' });
+      
+      // Auto-hide specific columns for dense financial reports to fit on PPT
+      let pptCols = columns;
+      const isFinancialReport = columns.some((c: string) => c.includes('Actual') && c.includes('Forecast'));
+      if (isFinancialReport) {
+        const firstActual = columns.find((c: string) => c.startsWith('Actual |'));
+        const currentYear = firstActual ? firstActual.split(' | ')[1] : null;
+
+        pptCols = columns.filter((c: string) => {
+          const parts = c.split(' | ');
+          const baseName = parts[0].trim();
+          
+          if (c === 'Vertical') return false;
+          if (baseName === 'Forecast') return false;
+          if (baseName === 'Budget') return false;
+          if (baseName === 'Actual' && parts[1] && parts[1].trim() !== currentYear) return false;
+          
+          return true;
+        });
+      }
+
+      const tableRows: any[] = [];
+      const parsedCols = pptCols.map((c: string) => c.split(' | '));
+      const maxDepth = Math.max(...parsedCols.map((p: any) => p.length));
+      
+      // Build multi-level header rows
+      for (let depth = 0; depth < maxDepth; depth++) {
+        const headerRow = [];
+        let colIdx = 0;
+        while (colIdx < parsedCols.length) {
+          const parts = parsedCols[colIdx];
+          
+          if (parts.length === 1) {
+            if (depth === 0) {
+               headerRow.push({ text: parts[0], options: { rowspan: maxDepth, bold: true, fill: { color: 'F1F5F9' }, color: '0F172A', fontSize: 5.5, align: 'left', valign: 'bottom', margin: [1, 2, 1, 2] } });
+            }
+            colIdx++;
+            continue;
+          }
+          
+          if (depth < parts.length) {
+             const cellValue = parts[depth];
+             let colSpan = 1;
+             let nextIdx = colIdx + 1;
+             while (nextIdx < parsedCols.length) {
+               const nextParts = parsedCols[nextIdx];
+               if (nextParts.length > 1 && nextParts[depth] === cellValue) {
+                 let parentsMatch = true;
+                 for (let p = 0; p < depth; p++) {
+                   if (parts[p] !== nextParts[p]) { parentsMatch = false; break; }
+                 }
+                 if (parentsMatch) { colSpan++; nextIdx++; }
+                 else break;
+               } else break;
+             }
+             
+             headerRow.push({ text: cellValue, options: { colspan: colSpan, bold: true, fill: { color: 'F1F5F9' }, color: '0F172A', fontSize: 5.5, align: 'center', valign: 'middle', margin: [1, 1, 1, 1] } });
+             colIdx = nextIdx;
+          } else {
+             colIdx++;
+          }
+        }
+        tableRows.push(headerRow);
+      }
+      
+      // Build data rows
+      rows.forEach((row: any) => {
+        const dataRow = [];
+        for (let colIdx = 0; colIdx < pptCols.length; colIdx++) {
+           const col = pptCols[colIdx];
+           const value = row[col] !== undefined ? row[col] : row[Object.keys(row).find((k: string) => k.toLowerCase() === col.toLowerCase()) || ''];
+           
+           // Format: large numbers get 0 decimals, small numbers get up to 2
+           let fmtVal = value ?? '';
+           if (typeof value === 'number') {
+             if (Math.abs(value) > 1000) {
+               fmtVal = value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+             } else {
+               fmtVal = value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+             }
+           }
+           
+           dataRow.push({ 
+             text: String(fmtVal), 
+             options: { 
+               fontSize: 5.5, 
+               align: typeof value === 'number' ? 'right' : 'left', 
+               valign: 'middle',
+               color: typeof value === 'number' && value < 0 ? 'DC2626' : '333333',
+               margin: [1, 2, 1, 2] // Extremely tight margins
+             } 
+           });
+        }
+        tableRows.push(dataRow);
+      });
+      
+      // Calculate tighter column widths (w: 9.6 total) to use maximum slide real estate
+      const totalCols = pptCols.length;
+      const baseColW = 0.9;
+      const restW = totalCols > 2 ? (9.6 - (baseColW * 2)) / (totalCols - 2) : 1;
+      const colW = pptCols.map((_, i) => i < 2 ? baseColW : restW);
+
+      slide.addTable(tableRows, { 
+        x: 0.2, y: 0.4, w: 9.6, 
+        autoPage: false, 
+        border: { type: 'solid', color: 'E2E8F0', pt: 0.5 },
+        colW: colW
+      });
+      
+      pptx.writeFile({ fileName: `${fileName}.pptx` });
     }
   } else {
     // Plain text export
@@ -491,6 +686,18 @@ const RenderContent = ({ content }: { content: string }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [commentary, setCommentary] = useState<any>(null);
   const [isCommentaryLoading, setIsCommentaryLoading] = useState(false);
+  const [showExportOptions, setShowExportOptions] = useState(false);
+  const exportRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (exportRef.current && !exportRef.current.contains(event.target as Node)) {
+        setShowExportOptions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   const [segmentRows, setSegmentRows] = useState<any[]>(() => {
     try {
       if (content.trim().startsWith('{')) {
@@ -1001,6 +1208,69 @@ const RenderContent = ({ content }: { content: string }) => {
     }
   };
 
+  const renderMultiLevelHeaders = (columns: string[]) => {
+    const parsedCols = columns.map(c => c.split(' | '));
+    const maxDepth = Math.max(...parsedCols.map(p => p.length));
+    
+    if (maxDepth <= 1) {
+      return (
+        <tr>
+          {columns.map((col, i) => <th key={i}>{col}</th>)}
+        </tr>
+      );
+    }
+    
+    const rows = [];
+    for (let depth = 0; depth < maxDepth; depth++) {
+      const rowCells = [];
+      let colIdx = 0;
+      while (colIdx < parsedCols.length) {
+        const parts = parsedCols[colIdx];
+        
+        if (parts.length === 1) {
+          if (depth === 0) {
+             rowCells.push(<th key={colIdx} rowSpan={maxDepth} style={{ verticalAlign: 'bottom' }}>{parts[0]}</th>);
+          }
+          colIdx++;
+          continue;
+        }
+        
+        if (depth < parts.length) {
+           const cellValue = parts[depth];
+           let colSpan = 1;
+           let nextIdx = colIdx + 1;
+           while (nextIdx < parsedCols.length) {
+             const nextParts = parsedCols[nextIdx];
+             if (nextParts.length > 1 && nextParts[depth] === cellValue) {
+               let parentsMatch = true;
+               for (let p = 0; p < depth; p++) {
+                 if (parts[p] !== nextParts[p]) {
+                   parentsMatch = false;
+                   break;
+                 }
+               }
+               if (parentsMatch) {
+                 colSpan++;
+                 nextIdx++;
+               } else {
+                 break;
+               }
+             } else {
+               break;
+             }
+           }
+           
+           rowCells.push(<th key={colIdx} colSpan={colSpan > 1 ? colSpan : undefined} style={{ textAlign: 'center' }}>{cellValue}</th>);
+           colIdx = nextIdx;
+        } else {
+           colIdx++;
+        }
+      }
+      rows.push(<tr key={depth}>{rowCells}</tr>);
+    }
+    return rows;
+  };
+
   if (parsedData) {
     // ── Segment Overview (Oracle Smart View style) ────────────────────────────
     if (parsedData.type === 'segment_overview' && parsedData.data && typeof parsedData.data === 'object' && !Array.isArray(parsedData.data)) {
@@ -1081,21 +1351,30 @@ const RenderContent = ({ content }: { content: string }) => {
               )}
 
               <div className="table-actions-row">
-                <button className="so-export-btn table-export-btn" onClick={() => handleExport('excel', content)}>
-                  <FileDown size={14} />
-                  <span>Export Table</span>
-                </button>
+                <div className="so-export-container" ref={exportRef}>
+                  <button className="so-export-btn table-export-btn" onClick={() => setShowExportOptions(!showExportOptions)} title="Export options">
+                    <FileDown size={14} />
+                    <span>Export</span>
+                    <ChevronDown size={12} className={`so-chevron${showExportOptions ? ' open' : ''}`} style={{ marginLeft: '6px' }} />
+                  </button>
+                  {showExportOptions && (
+                    <div className="so-export-dropdown" style={{ minWidth: '160px' }}>
+                      <div className="so-export-option" onClick={() => { handleExport('excel', content); setShowExportOptions(false); }}>
+                        Export as Excel
+                      </div>
+                      <div className="so-export-option" onClick={() => { handleExport('ppt', content); setShowExportOptions(false); }}>
+                        Export as PPT
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Data Table */}
               <div className={`table-scroll-wrapper ${isRefreshing ? 'table-refreshing' : ''}`}>
                 <table className="financial-table">
                   <thead>
-                    <tr>
-                      {Array.isArray(effectiveTable.columns) && effectiveTable.columns.map((col: string, i: number) => (
-                        <th key={i}>{col}</th>
-                      ))}
-                    </tr>
+                    {Array.isArray(effectiveTable.columns) ? renderMultiLevelHeaders(effectiveTable.columns) : null}
                   </thead>
                   <tbody>
                     {Array.isArray(effectiveTable.rows) && effectiveTable.rows.map((row: any, i: number) => (
@@ -1127,18 +1406,27 @@ const RenderContent = ({ content }: { content: string }) => {
         <div className="json-table-wrapper">
           <div className="table-header-row">
              <CollapsiblePOV povDetails={parsedData.povDetails || parsedData.povContext} />
-             <button className="so-export-btn table-export-btn" onClick={() => handleExport('excel', content)}>
-               <FileDown size={14} />
-               <span>Export</span>
-             </button>
+             <div className="so-export-container" ref={exportRef}>
+               <button className="so-export-btn table-export-btn" onClick={() => setShowExportOptions(!showExportOptions)} title="Export options">
+                 <FileDown size={14} />
+                 <span>Export</span>
+                 <ChevronDown size={12} className={`so-chevron${showExportOptions ? ' open' : ''}`} style={{ marginLeft: '6px' }} />
+               </button>
+               {showExportOptions && (
+                 <div className="so-export-dropdown" style={{ minWidth: '160px' }}>
+                   <div className="so-export-option" onClick={() => { handleExport('excel', content); setShowExportOptions(false); }}>
+                     Export as Excel
+                   </div>
+                   <div className="so-export-option" onClick={() => { handleExport('ppt', content); setShowExportOptions(false); }}>
+                     Export as PPT
+                   </div>
+                 </div>
+               )}
+             </div>
           </div>
           <table className="financial-table">
             <thead>
-              <tr>
-                {Array.isArray(parsedData.columns) && parsedData.columns.map((col: string, i: number) => (
-                  <th key={i}>{col}</th>
-                ))}
-              </tr>
+              {Array.isArray(parsedData.columns) ? renderMultiLevelHeaders(parsedData.columns) : null}
             </thead>
             <tbody>
               {Array.isArray(parsedData.rows) && parsedData.rows.map((row: any, i: number) => (

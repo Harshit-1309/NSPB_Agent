@@ -87,7 +87,8 @@ export const getFormData = async (args: any) => {
 
     // Call Oracle Planning REST API relative to planningClient base URL
     // Endpoint: GET /HyperionPlanning/rest/v3/applications/{application}/forms/{idorname}/data
-    let url = `/forms/${encodeURIComponent(idorname)}/data`;
+    const queryParams = new URLSearchParams();
+
     if (pageMbrList) {
       let pages: string[] = [];
       if (Array.isArray(pageMbrList)) {
@@ -95,9 +96,14 @@ export const getFormData = async (args: any) => {
       } else {
         pages = pageMbrList.split(',');
       }
-      const pageQuery = pages.map(m => `page=${encodeURIComponent(m.trim())}`).join('&');
-      url += `?${pageQuery}`;
+      pages.forEach(m => queryParams.append('page', m.trim()));
     }
+
+    // Add formatting parameters to get beautiful human-readable Alias names in the UI!
+    queryParams.append('displayMemberAs', 'Alias');
+    queryParams.append('memberAliasDelimiter', ' | ');
+
+    const url = `/forms/${encodeURIComponent(idorname)}/data?${queryParams.toString()}`;
 
     const response = await planningClient.get(url);
 

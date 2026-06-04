@@ -113,22 +113,21 @@ export class TransformationService {
       }
     }
     
-    // 4. Identify the Row Dimension dynamically
-    let rowDimLabel = "Member";
+    // 4. Identify the Row Dimensions dynamically
+    let rowDimLabels: string[] = ["Member"];
     
     // Check if the grid response includes dimension names for rows
     if (rawData.gridInfo?.rowDimNames) {
-      rowDimLabel = rawData.gridInfo.rowDimNames.map((d: string) => aliasMap[d] || d).join(' | ');
-    } else if (rawData.rows?.[0]?.dimensions?.[0]) {
-      const rowDim = rawData.rows[0].dimensions[0];
-      rowDimLabel = aliasMap[rowDim] || rowDim;
+      rowDimLabels = rawData.gridInfo.rowDimNames.map((d: string) => aliasMap[d] || d);
+    } else if (rawData.rows?.[0]?.dimensions) {
+      rowDimLabels = rawData.rows[0].dimensions.map((d: string) => aliasMap[d] || d);
     } else if (rowDimensions && rowDimensions.length > 0) {
       // Fallback to the dimensions we know were placed in rows
-      rowDimLabel = aliasMap[rowDimensions[0]] || rowDimensions[0];
+      rowDimLabels = rowDimensions.map((d: string) => aliasMap[d] || d);
     }
 
     // Ensure the row dimension is removed from POV details (since it's on an axis now)
-    delete povDetails[rowDimLabel];
+    rowDimLabels.forEach(label => delete povDetails[label]);
     if (rowDimensions) {
       rowDimensions.forEach(rd => {
         delete povDetails[rd];
@@ -136,31 +135,29 @@ export class TransformationService {
       });
     }
 
-    const columns = [rowDimLabel, ...colNames];
-    return { povDetails, columns, rows: this.formatRows(rawData, colNames, aliasMap, rowDimLabel) };
+    const columns = [...rowDimLabels, ...colNames];
+    return { povDetails, columns, rows: this.formatRows(rawData, colNames, aliasMap, rowDimLabels) };
   }
 
-  private formatRows(rawData: any, colNames: string[], aliasMap: Record<string, string>, rowDimLabel: string): any[] {
+  private formatRows(rawData: any, colNames: string[], aliasMap: Record<string, string>, rowDimLabels: string[]): any[] {
     return rawData.rows.map((row: any) => {
-      let rowName = row.headers[0];
-      let rowLabel = aliasMap[rowName] || rowName;
       
-      // If we have multiple headers (multi-dimension rows), join them
-      if (row.headers.length > 1) {
-        rowLabel = row.headers.map((h: string) => aliasMap[h] || h).join(' | ');
-      }
-      
-      // Clean up common technical prefixes ONLY if no alias was found
-      if (rowLabel === rowName || (row.headers.length > 1 && rowLabel.includes(row.headers[0]))) {
-        if (typeof rowLabel === 'string') {
-          if (rowLabel.startsWith('NFS_')) rowLabel = rowLabel.replace('NFS_', '');
-          if (rowLabel.includes('_')) rowLabel = rowLabel.replace(/_/g, ' ');
-        }
-      }
+      const rowData: Record<string, string | number> = {};
 
-      const rowData: Record<string, string | number> = {
-        [rowDimLabel]: rowLabel
-      };
+      rowDimLabels.forEach((label, idx) => {
+        let rowName = row.headers[idx] || (row.headers.length > 0 ? row.headers[0] : "N/A");
+        let rowLabel = aliasMap[rowName] || rowName;
+        
+        // Clean up common technical prefixes ONLY if no alias was found
+        if (rowLabel === rowName) {
+          if (typeof rowLabel === 'string') {
+            if (rowLabel.startsWith('NFS_')) rowLabel = rowLabel.replace('NFS_', '');
+            if (rowLabel.includes('_')) rowLabel = rowLabel.replace(/_/g, ' ');
+          }
+        }
+        
+        rowData[label] = rowLabel;
+      });
 
       colNames.forEach((col: string, index: number) => {
         const val = row.data[index];
