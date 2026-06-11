@@ -91,6 +91,51 @@ export class AliasResolver {
 
     return results;
   }
+
+  /**
+   * Resolves an alias back to its technical member name.
+   */
+  async resolveAliasToName(dimName: string, alias: string): Promise<string> {
+    if (!alias || alias === 'N/A') return alias;
+
+    // 1. Reverse lookup in cache
+    for (const [key, value] of this.cache.entries()) {
+      if (key.startsWith(`${dimName}:`) && value === alias) {
+        return key.split(':')[1];
+      }
+    }
+
+    // 2. Optimization for TP codes
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthIdx = months.findIndex(m => m.toLowerCase() === alias.toLowerCase());
+    if (monthIdx >= 0) {
+      return `TP${monthIdx + 1}`;
+    }
+
+    // 3. Fetch dimension tree to find it
+    try {
+      logger.info(`Reverse lookup for alias "${alias}" in dimension ${dimName}...`);
+      const planType = 'NSP_NFS';
+      const response = await (await import('../services/oracleClient.js')).default.get(`/plantypes/${planType}/dimensions/${encodeURIComponent(dimName)}`);
+      
+      let foundName = alias;
+      const traverse = (node: any) => {
+        if (node.name && node.alias) {
+          this.cache.set(`${dimName}:${node.name}`, node.alias);
+          if (node.alias.toLowerCase() === alias.toLowerCase() || node.name.toLowerCase() === alias.toLowerCase()) {
+            foundName = node.name;
+          }
+        }
+        if (node.children) node.children.forEach(traverse);
+      };
+
+      if (response.data) traverse(response.data);
+      return foundName;
+    } catch (err) {
+      logger.warn(`Reverse alias lookup failed for ${alias} in ${dimName}`);
+      return alias; // fallback to returning the alias itself
+    }
+  }
 }
 
 export const aliasResolver = new AliasResolver();

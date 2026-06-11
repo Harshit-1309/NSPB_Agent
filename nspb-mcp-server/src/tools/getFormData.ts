@@ -35,7 +35,7 @@ export const getFormData = async (args: any) => {
           logger.info(`Fetching user variables to update for user: ${username}`);
           // 2. Fetch all user variables
           const uvRes = await planningClient.get('/uservariables');
-          const allVars = uvRes.data?.items || [];
+          const allVars = (uvRes.data as any)?.items || [];
 
           // 3. Find matching variables for requested dimensions
           const itemsToUpdate: any[] = [];
@@ -60,11 +60,22 @@ export const getFormData = async (args: any) => {
 
             const matchingVars = allVars.filter((v: any) => v.dimension.toLowerCase() === dim.toLowerCase());
             for (const v of matchingVars) {
+              let finalMember = mappedMember;
+
+              // If dimension is Years and the variable name contains 'prior', dynamically subtract 1 year
+              if (dim.toLowerCase() === 'years' && v.name.toLowerCase().includes('prior')) {
+                const match = mappedMember.match(/FY(\d+)/i);
+                if (match) {
+                  const yr = parseInt(match[1], 10);
+                  finalMember = `FY${yr - 1}`;
+                }
+              }
+
               itemsToUpdate.push({
                 userName: username,
                 name: v.name,
                 dimension: v.dimension,
-                member: mappedMember
+                member: finalMember
               });
             }
           }

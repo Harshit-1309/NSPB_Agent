@@ -326,7 +326,6 @@ app.post('/api/refilter', async (req: Request, res: Response) => {
       logger.info(`[/api/refilter] Form page dims: ${pageDimNames.join(',')}`, { overrides, povByDim });
 
       // Build pageMbrList: for each page dim, use override if provided, else use povByDim, else fallback to pov array
-      const newMembers: string[] = [];
       const newPov: any = { dimensions: [], members: [] };
 
       // First, add fixed POV dims (non-page dims) to newPov for transformationService context
@@ -338,7 +337,7 @@ app.post('/api/refilter', async (req: Request, res: Response) => {
       });
 
       // Then, for each page dim, resolve current member
-      pageDimNames.forEach((pageDim: string, idx: number) => {
+      const resolvedPageDims = await Promise.all(pageDimNames.map(async (pageDim: string, idx: number) => {
         const overrideKey = Object.keys(overrides).find(k => k.toLowerCase() === pageDim.toLowerCase());
         let currentMbr: string;
         
@@ -354,15 +353,29 @@ app.post('/api/refilter', async (req: Request, res: Response) => {
           currentMbr = povArray[povOffset + idx] || 'N/A';
         }
         
-        newMembers.push(currentMbr);
+        // Oracle requires true Member Names in the page parameters, not Aliases!
+        const resolvedName = await aliasResolver.resolveAliasToName(pageDim, currentMbr);
+        return { pageDim, currentMbr, resolvedName };
+      }));
+
+      const newMembers: string[] = [];
+      resolvedPageDims.forEach(({ pageDim, currentMbr, resolvedName }) => {
+        newMembers.push(resolvedName);
         newPov.dimensions.push(pageDim);
-        newPov.members.push([currentMbr]);
+        newPov.members.push([currentMbr]); // the frontend still expects the alias
       });
 
       const pageMbrList = newMembers.join(',');
-      logger.info(`[/api/refilter] Re-running form: ${idorname} with pageMbrList=${pageMbrList}`);
+      
+      const userVariableUpdates: Record<string, string> = {};
+      const periodKey = Object.keys(overrides).find(k => k.toLowerCase() === 'period');
+      if (periodKey) userVariableUpdates['Period'] = overrides[periodKey];
+      const yearsKey = Object.keys(overrides).find(k => k.toLowerCase() === 'years');
+      if (yearsKey) userVariableUpdates['Years'] = overrides[yearsKey];
 
-      const result = await getFormData({ idorname, pageMbrList });
+      logger.info(`[/api/refilter] Re-running form: ${idorname} with pageMbrList=${pageMbrList}`, { userVariableUpdates });
+
+      const result = await getFormData({ idorname, pageMbrList, userVariableUpdates });
       if (!result.success) {
         return res.status(400).json({ error: result.error, details: result.details });
       }

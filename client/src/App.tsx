@@ -14,6 +14,7 @@ import autoTable from 'jspdf-autotable';
 import { SegmentOverviewReport } from './SegmentOverviewReport';
 import { CommentaryReport } from './CommentaryReport';
 import { ReportCharts } from './ReportCharts';
+import { GenericReportCharts } from './GenericReportCharts';
 import pptxgen from 'pptxgenjs';
 import { API_BASE_URL } from './config';
 import './App.css';
@@ -156,10 +157,11 @@ const downloadFile = (blob: Blob, fileName: string) => {
 
 const handleExport = (type: 'csv' | 'excel' | 'pdf' | 'ppt', content: string) => {
   let tableData: any = null;
+  let parsedData: any = null;
   try {
-    const data = JSON.parse(content);
-    if (data.type === 'table') tableData = data;
-    else if (data.type === 'report' && data.table) tableData = data.table;
+    parsedData = JSON.parse(content);
+    if (parsedData.type === 'table') tableData = parsedData;
+    else if (parsedData.table) tableData = parsedData.table;
   } catch (e) { }
 
   const fileName = `export_${new Date().getTime()}`;
@@ -278,118 +280,257 @@ const handleExport = (type: 'csv' | 'excel' | 'pdf' | 'ppt', content: string) =>
     } else if (type === 'ppt') {
       const pptx = new pptxgen();
       pptx.layout = 'LAYOUT_16x9'; // 10 x 5.625 inches
-      const slide = pptx.addSlide();
-      slide.addText("Exported Data", { x: 0.2, y: 0.1, w: "90%", fontSize: 14, bold: true, color: '333333' });
       
-      // Auto-hide specific columns for dense financial reports to fit on PPT
-      let pptCols = columns;
-      const isFinancialReport = columns.some((c: string) => c.includes('Actual') && c.includes('Forecast'));
-      if (isFinancialReport) {
-        const firstActual = columns.find((c: string) => c.startsWith('Actual |'));
-        const currentYear = firstActual ? firstActual.split(' | ')[1] : null;
+      const isAnalyticalReport = parsedData && (parsedData.type === 'form_analysis' || parsedData.type === 'segment_overview');
 
-        pptCols = columns.filter((c: string) => {
-          const parts = c.split(' | ');
-          const baseName = parts[0].trim();
-          
-          if (c === 'Vertical') return false;
-          if (baseName === 'Forecast') return false;
-          if (baseName === 'Budget') return false;
-          if (baseName === 'Actual' && parts[1] && parts[1].trim() !== currentYear) return false;
-          
-          return true;
+      if (isAnalyticalReport) {
+        // --- SLIDE 1: Dashboard Layout ---
+        const slide1 = pptx.addSlide();
+        
+        // Red Banner
+        slide1.addShape(pptx.ShapeType.rect, { x: 0, y: 0.1, w: 4.0, h: 0.5, fill: { color: 'EF4444' } });
+        slide1.addText("Segment Overview", { x: 0.1, y: 0.1, w: 3.8, h: 0.5, fontSize: 18, bold: true, color: 'FFFFFF', valign: 'middle' });
+        
+        // Date Text
+        const period = parsedData.gridConfig?.povByDim?.['Period'] || '';
+        const years = parsedData.gridConfig?.povByDim?.['Years'] || '';
+        slide1.addText(`| ${period} ${years}`, { x: 4.1, y: 0.1, w: 3, h: 0.5, fontSize: 16, bold: true, color: '333333', valign: 'middle' });
+
+        // Commentary Box (Left Side)
+        slide1.addShape(pptx.ShapeType.rect, { x: 0.2, y: 0.8, w: 3.8, h: 4.6, fill: { color: 'FFFFFF' }, line: { color: 'E2E8F0', pt: 1 } });
+        
+        let commentaryY = 0.9;
+        const comm = parsedData.commentary;
+        if (comm) {
+          if (comm.vsFcst && comm.vsFcst.length > 0) {
+            slide1.addText("vs. F1 Forecast", { x: 0.3, y: commentaryY, w: 3.6, h: 0.3, fontSize: 10, bold: true, color: '1E3A8A' });
+            commentaryY += 0.3;
+            comm.vsFcst.forEach((item: any) => {
+              let text = item.text || '';
+              item.highlights?.forEach((h: any, idx: number) => {
+                text = text.replace(`{{H${idx}}}`, h.label || h.value);
+              });
+              slide1.addText([{ text, options: { bullet: true as any, fontSize: 8, color: '333333' } }], { x: 0.3, y: commentaryY, w: 3.6, h: 0.3 });
+              commentaryY += 0.3;
+            });
+            commentaryY += 0.1;
+          }
+          if (comm.vsLy && comm.vsLy.length > 0) {
+            slide1.addText("vs. Last Year", { x: 0.3, y: commentaryY, w: 3.6, h: 0.3, fontSize: 10, bold: true, color: '1E3A8A' });
+            commentaryY += 0.3;
+            comm.vsLy.forEach((item: any) => {
+              let text = item.text || '';
+              item.highlights?.forEach((h: any, idx: number) => {
+                text = text.replace(`{{H${idx}}}`, h.label || h.value);
+              });
+              slide1.addText([{ text, options: { bullet: true as any, fontSize: 8, color: '333333' } }], { x: 0.3, y: commentaryY, w: 3.6, h: 0.3 });
+              commentaryY += 0.3;
+            });
+          }
+        }
+
+        // Filter Table Columns (Hide Forecast, Budget, Last Year)
+        const allowedBases = ['Actual', 'vs FCST', 'vs BUD', 'vs LY', 'vs LY %'];
+        let pptCols = columns.filter((c: string) => {
+          if (c === 'Vertical' || c.startsWith('Member |')) return true;
+          const baseName = c.split(' | ')[0].trim();
+          return allowedBases.includes(baseName);
         });
-      }
 
-      const tableRows: any[] = [];
-      const parsedCols = pptCols.map((c: string) => c.split(' | '));
-      const maxDepth = Math.max(...parsedCols.map((p: any) => p.length));
-      
-      // Build multi-level header rows
-      for (let depth = 0; depth < maxDepth; depth++) {
-        const headerRow = [];
-        let colIdx = 0;
-        while (colIdx < parsedCols.length) {
-          const parts = parsedCols[colIdx];
-          
-          if (parts.length === 1) {
-            if (depth === 0) {
-               headerRow.push({ text: parts[0], options: { rowspan: maxDepth, bold: true, fill: { color: 'F1F5F9' }, color: '0F172A', fontSize: 5.5, align: 'left', valign: 'bottom', margin: [1, 2, 1, 2] } });
+        const tableRows: any[] = [];
+        const parsedCols = pptCols.map((c: string) => c.split(' | '));
+        const maxDepth = Math.max(...parsedCols.map((p: any) => p.length));
+        
+        for (let depth = 0; depth < maxDepth; depth++) {
+          const headerRow = [];
+          let colIdx = 0;
+          while (colIdx < parsedCols.length) {
+            const parts = parsedCols[colIdx];
+            if (parts.length === 1) {
+              if (depth === 0) {
+                 headerRow.push({ text: parts[0], options: { rowspan: maxDepth, bold: true, fill: { color: '1E293B' }, color: 'FFFFFF', fontSize: 5.5, align: 'left', valign: 'bottom', margin: [1, 2, 1, 2] } });
+              }
+              colIdx++;
+              continue;
             }
-            colIdx++;
-            continue;
+            if (depth < parts.length) {
+               const cellValue = parts[depth];
+               let colSpan = 1;
+               let nextIdx = colIdx + 1;
+               while (nextIdx < parsedCols.length) {
+                 const nextParts = parsedCols[nextIdx];
+                 if (nextParts.length > 1 && nextParts[depth] === cellValue) {
+                   let parentsMatch = true;
+                   for (let p = 0; p < depth; p++) {
+                     if (parts[p] !== nextParts[p]) { parentsMatch = false; break; }
+                   }
+                   if (parentsMatch) { colSpan++; nextIdx++; }
+                   else break;
+                 } else break;
+               }
+               headerRow.push({ text: cellValue, options: { colspan: colSpan, bold: true, fill: { color: '1E293B' }, color: 'FFFFFF', fontSize: 5.5, align: 'center', valign: 'middle', margin: [1, 1, 1, 1] } });
+               colIdx = nextIdx;
+            } else {
+               colIdx++;
+            }
           }
-          
-          if (depth < parts.length) {
-             const cellValue = parts[depth];
-             let colSpan = 1;
-             let nextIdx = colIdx + 1;
-             while (nextIdx < parsedCols.length) {
-               const nextParts = parsedCols[nextIdx];
-               if (nextParts.length > 1 && nextParts[depth] === cellValue) {
-                 let parentsMatch = true;
-                 for (let p = 0; p < depth; p++) {
-                   if (parts[p] !== nextParts[p]) { parentsMatch = false; break; }
-                 }
-                 if (parentsMatch) { colSpan++; nextIdx++; }
-                 else break;
-               } else break;
+          tableRows.push(headerRow);
+        }
+        
+        rows.forEach((row: any) => {
+          const dataRow = [];
+          for (let colIdx = 0; colIdx < pptCols.length; colIdx++) {
+             const col = pptCols[colIdx];
+             const value = row[col] !== undefined ? row[col] : row[Object.keys(row).find((k: string) => k.toLowerCase() === col.toLowerCase()) || ''];
+             let fmtVal = value ?? '';
+             if (typeof value === 'number') {
+               fmtVal = Math.abs(value) > 1000 ? value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
              }
-             
-             headerRow.push({ text: cellValue, options: { colspan: colSpan, bold: true, fill: { color: 'F1F5F9' }, color: '0F172A', fontSize: 5.5, align: 'center', valign: 'middle', margin: [1, 1, 1, 1] } });
-             colIdx = nextIdx;
-          } else {
-             colIdx++;
+             dataRow.push({ 
+               text: String(fmtVal), 
+               options: { fontSize: 5.5, align: typeof value === 'number' ? 'right' : 'left', valign: 'middle', color: typeof value === 'number' && value < 0 ? 'DC2626' : '333333', margin: [1, 2, 1, 2] } 
+             });
           }
-        }
-        tableRows.push(headerRow);
-      }
-      
-      // Build data rows
-      rows.forEach((row: any) => {
-        const dataRow = [];
-        for (let colIdx = 0; colIdx < pptCols.length; colIdx++) {
-           const col = pptCols[colIdx];
-           const value = row[col] !== undefined ? row[col] : row[Object.keys(row).find((k: string) => k.toLowerCase() === col.toLowerCase()) || ''];
-           
-           // Format: large numbers get 0 decimals, small numbers get up to 2
-           let fmtVal = value ?? '';
-           if (typeof value === 'number') {
-             if (Math.abs(value) > 1000) {
-               fmtVal = value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-             } else {
-               fmtVal = value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-             }
-           }
-           
-           dataRow.push({ 
-             text: String(fmtVal), 
-             options: { 
-               fontSize: 5.5, 
-               align: typeof value === 'number' ? 'right' : 'left', 
-               valign: 'middle',
-               color: typeof value === 'number' && value < 0 ? 'DC2626' : '333333',
-               margin: [1, 2, 1, 2] // Extremely tight margins
-             } 
-           });
-        }
-        tableRows.push(dataRow);
-      });
-      
-      // Calculate tighter column widths (w: 9.6 total) to use maximum slide real estate
-      const totalCols = pptCols.length;
-      const baseColW = 0.9;
-      const restW = totalCols > 2 ? (9.6 - (baseColW * 2)) / (totalCols - 2) : 1;
-      const colW = pptCols.map((_, i) => i < 2 ? baseColW : restW);
+          tableRows.push(dataRow);
+        });
+        
+        const totalCols = pptCols.length;
+        const baseColW = 0.8;
+        const restW = totalCols > 2 ? (5.6 - (baseColW * 2)) / (totalCols - 2) : 1;
+        const colW = pptCols.map((_: any, i: number) => i < 2 ? baseColW : restW);
 
-      slide.addTable(tableRows, { 
-        x: 0.2, y: 0.4, w: 9.6, 
-        autoPage: false, 
-        border: { type: 'solid', color: 'E2E8F0', pt: 0.5 },
-        colW: colW
-      });
-      
-      pptx.writeFile({ fileName: `${fileName}.pptx` });
+        slide1.addTable(tableRows, { x: 4.1, y: 0.8, w: 5.6, h: 2.2, autoPage: false, border: { type: 'solid', color: 'E2E8F0', pt: 0.5 }, colW: colW });
+
+        // Charts
+        const lineLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const lineRow = rows.find((r: any) => (r['Vertical'] || r['Member | Name'])?.includes('Revenues'));
+        const chartData: any[] = [];
+        if (lineRow) {
+          const yearsList = ['2025 F1', '2025 Budget', '2024 Actuals', '2025 Actual'];
+          yearsList.forEach((yr) => {
+            const seriesVals = lineLabels.map(m => {
+              const val = lineRow[`${yr} | ${m}`];
+              return typeof val === 'number' ? val : null;
+            });
+            chartData.push({ name: yr, labels: lineLabels, values: seriesVals });
+          });
+          slide1.addChart(pptx.ChartType.line, chartData, { x: 4.1, y: 3.2, w: 3.2, h: 2.2, showLegend: true, legendPos: 't', legendFontSize: 6, lineDataSymbol: 'none', valAxisLabelFormatCode: '#,##0', showValAxisTitle: false });
+        }
+
+        const pieData: any[] = [];
+        const excludedForPie = ['Revenues', 'Total Casino', 'Total Sport'];
+        const currentYearCol = columns.find((c: string) => c.startsWith('Actual |') && c.includes(period)) || columns.find((c: string) => c.startsWith('Actual |'));
+        if (currentYearCol) {
+          rows.forEach((r: any) => {
+            const mName = r['Vertical'] || r['Member | Name'] || '';
+            if (!excludedForPie.some(ex => mName.includes(ex)) && mName) {
+               const val = r[currentYearCol];
+               if (typeof val === 'number' && val > 0) {
+                 pieData.push({ name: mName.replace('+', '').trim(), labels: [mName.replace('+', '').trim()], values: [val] });
+               }
+            }
+          });
+          if (pieData.length > 0) {
+            slide1.addChart(pptx.ChartType.pie, pieData, { x: 7.4, y: 3.2, w: 2.3, h: 2.2, showLegend: true, legendPos: 'r', legendFontSize: 5, showPercent: true });
+          }
+        }
+
+        // --- SLIDE 2: Deep Analysis ---
+        const slide2 = pptx.addSlide();
+        slide2.addShape(pptx.ShapeType.rect, { x: 0, y: 0.1, w: 10.0, h: 0.5, fill: { color: '1E293B' } });
+        slide2.addText("Deep Analysis Report", { x: 0.2, y: 0.1, w: 9.6, h: 0.5, fontSize: 18, bold: true, color: 'FFFFFF', valign: 'middle' });
+        
+        let analysisText = parsedData.analysis || '';
+        analysisText = analysisText.replace(/#/g, '').replace(/\*/g, '').trim();
+        slide2.addText(analysisText, { x: 0.2, y: 0.8, w: 9.6, h: 4.6, fontSize: 10, color: '333333', align: 'left', valign: 'top' });
+
+        pptx.writeFile({ fileName: `${fileName}.pptx` });
+
+      } else {
+        const slide = pptx.addSlide();
+        slide.addText("Exported Data", { x: 0.2, y: 0.1, w: "90%", fontSize: 14, bold: true, color: '333333' });
+        
+        let pptCols = columns;
+        const isFinancialReport = columns.some((c: string) => c.includes('Actual') && c.includes('Forecast'));
+        if (isFinancialReport) {
+          const firstActual = columns.find((c: string) => c.startsWith('Actual |'));
+          const currentYear = firstActual ? firstActual.split(' | ')[1] : null;
+  
+          pptCols = columns.filter((c: string) => {
+            const parts = c.split(' | ');
+            const baseName = parts[0].trim();
+            if (c === 'Vertical') return false;
+            if (baseName === 'Forecast') return false;
+            if (baseName === 'Budget') return false;
+            if (baseName === 'Actual' && parts[1] && parts[1].trim() !== currentYear) return false;
+            return true;
+          });
+        }
+  
+        const tableRows: any[] = [];
+        const parsedCols = pptCols.map((c: string) => c.split(' | '));
+        const maxDepth = Math.max(...parsedCols.map((p: any) => p.length));
+        
+        for (let depth = 0; depth < maxDepth; depth++) {
+          const headerRow = [];
+          let colIdx = 0;
+          while (colIdx < parsedCols.length) {
+            const parts = parsedCols[colIdx];
+            if (parts.length === 1) {
+              if (depth === 0) {
+                 headerRow.push({ text: parts[0], options: { rowspan: maxDepth, bold: true, fill: { color: 'F1F5F9' }, color: '0F172A', fontSize: 5.5, align: 'left', valign: 'bottom', margin: [1, 2, 1, 2] } });
+              }
+              colIdx++;
+              continue;
+            }
+            if (depth < parts.length) {
+               const cellValue = parts[depth];
+               let colSpan = 1;
+               let nextIdx = colIdx + 1;
+               while (nextIdx < parsedCols.length) {
+                 const nextParts = parsedCols[nextIdx];
+                 if (nextParts.length > 1 && nextParts[depth] === cellValue) {
+                   let parentsMatch = true;
+                   for (let p = 0; p < depth; p++) {
+                     if (parts[p] !== nextParts[p]) { parentsMatch = false; break; }
+                   }
+                   if (parentsMatch) { colSpan++; nextIdx++; }
+                   else break;
+                 } else break;
+               }
+               headerRow.push({ text: cellValue, options: { colspan: colSpan, bold: true, fill: { color: 'F1F5F9' }, color: '0F172A', fontSize: 5.5, align: 'center', valign: 'middle', margin: [1, 1, 1, 1] } });
+               colIdx = nextIdx;
+            } else {
+               colIdx++;
+            }
+          }
+          tableRows.push(headerRow);
+        }
+        
+        rows.forEach((row: any) => {
+          const dataRow = [];
+          for (let colIdx = 0; colIdx < pptCols.length; colIdx++) {
+             const col = pptCols[colIdx];
+             const value = row[col] !== undefined ? row[col] : row[Object.keys(row).find((k: string) => k.toLowerCase() === col.toLowerCase()) || ''];
+             let fmtVal = value ?? '';
+             if (typeof value === 'number') {
+               fmtVal = Math.abs(value) > 1000 ? value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+             }
+             dataRow.push({ text: String(fmtVal), options: { fontSize: 5.5, align: typeof value === 'number' ? 'right' : 'left', valign: 'middle', color: typeof value === 'number' && value < 0 ? 'DC2626' : '333333', margin: [1, 2, 1, 2] } });
+          }
+          tableRows.push(dataRow);
+        });
+        
+        const totalCols = pptCols.length;
+        const baseColW = 0.9;
+        const restW = totalCols > 2 ? (9.6 - (baseColW * 2)) / (totalCols - 2) : 1;
+        const colW = pptCols.map((_: any, i: number) => i < 2 ? baseColW : restW);
+
+        slide.addTable(tableRows, { x: 0.2, y: 0.4, w: 9.6, autoPage: false, border: { type: 'solid', color: 'E2E8F0', pt: 0.5 }, colW: colW });
+        
+        pptx.writeFile({ fileName: `${fileName}.pptx` });
+      }
+
     }
   } else {
     // Plain text export
@@ -430,7 +571,8 @@ const MODELS = [
   { id: 'openai/gpt-4o', name: 'GPT-4o' },
   { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini' },
   { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash' },
-  { id: 'z-ai/glm-4.5-air:free', name: 'GLM-4.5 Air' },
+  { id: 'z-ai/glm-4.5-air', name: 'GLM-4.5 Air' },
+  { id: 'minimax/minimax-01', name: 'MiniMax 3' },
 ];
 
 // ... (HomeView remains the same)
@@ -1396,6 +1538,114 @@ const RenderContent = ({ content }: { content: string }) => {
                 </table>
               </div>
             </div>
+          )}
+        </div>
+      );
+    }
+
+    if (parsedData.type === 'form_analysis') {
+      return (
+        <div className="report-container">
+          {effectiveTable && (
+            <div className="json-table-wrapper" style={{ marginTop: '24px' }}>
+              {/* Interactive filter dropdowns */}
+              {parsedData.filters && parsedData.filters.length > 0 && (
+                <div className="active-filters-row">
+                  {parsedData.filters
+                    .filter((f: string) => {
+                      const rowHeader = effectiveTable.columns[0]?.toLowerCase();
+                      return f.toLowerCase() !== rowHeader && rowHeader !== 'member';
+                    })
+                    .map((dim: string, i: number) => (
+                      <FilterDropdown
+                        key={i}
+                        dim={dim}
+                        gridConfig={parsedData.gridConfig}
+                        livePov={livePov}
+                        currentVal={livePov[dim] || `NSP_Total ${dim}`}
+                        onSelect={(member) => handleFilterChange(dim, member)}
+                      />
+                    ))}
+                  {isRefreshing && (
+                    <div className="filter-refreshing">
+                      <div className="filter-refresh-spinner" />
+                      <span>Updating table...</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Fixed context dims */}
+              {effectiveTable.povDetails && Object.keys(effectiveTable.povDetails).length > 0 && (
+                <CollapsiblePOV povDetails={Object.fromEntries(
+                  Object.entries(effectiveTable.povDetails).filter(
+                    ([key]) => !(parsedData.filters || []).map((f: string) => f.toLowerCase()).includes(key.toLowerCase())
+                  )
+                )} />
+              )}
+
+              <div className="table-actions-row">
+                <div className="so-export-container" ref={exportRef}>
+                  <button className="so-export-btn table-export-btn" onClick={() => setShowExportOptions(!showExportOptions)} title="Export options">
+                    <FileDown size={14} />
+                    <span>Export</span>
+                    <ChevronDown size={12} className={`so-chevron${showExportOptions ? ' open' : ''}`} style={{ marginLeft: '6px' }} />
+                  </button>
+                  {showExportOptions && (
+                    <div className="so-export-dropdown" style={{ minWidth: '160px' }}>
+                      <div className="so-export-option" onClick={() => { handleExport('excel', content); setShowExportOptions(false); }}>
+                        Export as Excel
+                      </div>
+                      <div className="so-export-option" onClick={() => { handleExport('ppt', content); setShowExportOptions(false); }}>
+                        Export as PPT
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Data Table */}
+              <div className={`table-scroll-wrapper ${isRefreshing ? 'table-refreshing' : ''}`}>
+                <table className="financial-table">
+                  <thead>
+                    {Array.isArray(effectiveTable.columns) ? renderMultiLevelHeaders(effectiveTable.columns) : null}
+                  </thead>
+                  <tbody>
+                    {Array.isArray(effectiveTable.rows) && effectiveTable.rows.map((row: any, i: number) => (
+                      <tr key={i}>
+                        {Array.isArray(effectiveTable.columns) && effectiveTable.columns.map((col: string, j: number) => {
+                          const value = (row && row[col] !== undefined) ? row[col] :
+                            (row ? row[Object.keys(row).find(k => k.toLowerCase() === col.toLowerCase()) || ''] : '');
+                          return (
+                            <td key={j}>
+                              {typeof value === 'number'
+                                ? value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+                                : (value ?? '')}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          <div className="report-analysis" style={{ marginTop: '24px' }}>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{parsedData.analysis}</ReactMarkdown>
+          </div>
+
+          {parsedData.commentary && (
+            <CommentaryReport 
+              commentary={parsedData.commentary}
+              isLoading={false}
+              period={effectiveTable?.povDetails?.Period || 'Current Period'}
+            />
+          )}
+
+          {effectiveTable && effectiveTable.columns && effectiveTable.rows && (
+            <GenericReportCharts columns={effectiveTable.columns} rows={effectiveTable.rows} />
           )}
         </div>
       );

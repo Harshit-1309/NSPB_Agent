@@ -32,20 +32,21 @@ When performing deep analysis, you MUST address the following areas:
 
 ## Output Requirements
 Always provide your analysis using these exact sections:
-[SUMMARY] - A 2-3 sentence executive summary.
-[INSIGHTS] - A bulleted list of 3-5 key findings/trends.
-[ANALYSIS] - Detailed quantitative commentary.
-[RECOMMENDATIONS] - A bulleted list of 2-3 actionable steps.
+[SUMMARY] - A 3-4 bullet point executive summary highlighting the most critical trends.
+[INSIGHTS] - A detailed bulleted list of 3-5 key findings. Go BEYOND basic numbers. Explain **FROM WHERE** the change originated by tracing it down the provided data hierarchy (e.g., if Total Expenses increased, explicitly name which specific vertical or department drove that increase based on the data). Use bold text to **highlight important parts** and metric numbers to increase readability.
+[ANALYSIS] - A bulleted list focusing deeply on expenses and revenue components. Where are the largest cost centers or growth areas according to the data?
+[RECOMMENDATIONS] - A bulleted list of 2-3 actionable steps based purely on the mathematical trends observed.
 
 Use structured formatting within sections, but do NOT include Markdown tables (the Formatter will add the table separately).
+Everything should be in highly readable bullet points with key terms, variances, and actionable phrases **bolded**.
 
 ## Constraints & Guidelines
-- Ensure numerical accuracy and consistency.
-- DO NOT hallucinate financial data.
+- **CRITICAL RULE**: DO NOT hallucinate, guess, or synthesize any numbers, years, scenarios (like Budget, Forecast, or FY25/FY26), or external business drivers. 
+- You must strictly use ONLY the dimensions, members, and figures explicitly present in the DATA CONTEXT.
+- If the data only shows Actuals, DO NOT mention Budget or Forecast.
+- If explaining *why* a number changed, your explanation MUST be derived purely from the component breakdown in the data (e.g. "Total fell because Casino fell"). Do NOT invent external reasons like "market conditions" or "marketing campaigns".
 - Base conclusions STRICTLY on provided data from tools.
-- Prefer structured data sources over user assumptions or incomplete chat history.
-- If data is missing or incomplete, clearly state the limitations or ask for the missing inputs before providing analysis.
-- Prioritize business impact over generic commentary.
+- If data is missing or incomplete, clearly state the limitations.
 
 DATA CONTEXT:
 {rawData}
@@ -68,13 +69,18 @@ export class FpaAgent {
 
       const actualData = rawData && rawData.data ? rawData.data : rawData;
       const cleanData = transformationService.stripUnwantedFields(actualData) || actualData;
+      
+      let dataString = JSON.stringify(cleanData);
+      if (dataString.length > 40000) {
+        dataString = dataString.substring(0, 40000) + '... [TRUNCATED DUE TO SIZE LIMIT]';
+      }
 
       const response = await withRetry(() => openai.chat.completions.create({
         model: modelId || MODEL,
         messages: [
           { 
             role: 'system', 
-            content: FPA_PROMPT.replace('{rawData}', JSON.stringify(cleanData))
+            content: FPA_PROMPT.replace('{rawData}', dataString)
           },
           {
             role: 'user',

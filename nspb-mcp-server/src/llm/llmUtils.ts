@@ -13,13 +13,13 @@ export async function withRetry<T>(
   
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
-      // Enforce a hard 60-second timeout at the Promise level
+      // Enforce a hard 180-second timeout at the Promise level
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => {
-          const err = new Error('LLM request timed out at the application level after 60000ms');
+          const err = new Error('LLM request timed out at the application level after 180000ms');
           (err as any).code = 'ECONNABORTED'; // Make it retryable
           reject(err);
-        }, 60000);
+        }, 180000);
       });
       
       return await Promise.race([fn(), timeoutPromise]);

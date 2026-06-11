@@ -81,13 +81,17 @@ export const TOOLS_REGISTRY = [
     description: 'Export a structured data slice from NSPB. Use rows, columns, and pov to define the pivot table layout. \n' +
                  'IMPORTANT: If the user asks for data "By Department", set pivotDim="Department". \n' +
                  'If the user asks for data "By Class", set pivotDim="Class". \n' +
-                 'For these pivots, the system will automatically use ILvl0Descendants("TD") or ILvl0Descendants("TC") and move Account to POV.',
+                 'For these pivots, the system will automatically use ILvl0Descendants("TD") or ILvl0Descendants("TC") and move Account to POV.\n' +
+                 'CRITICAL: If the user mentions "Expense", you MUST pass "NFS_Expense" in the `accounts` parameter or inside `pov.Account`!',
     inputSchema: {
       type: 'object',
       properties: {
         rows: { type: 'array', items: { type: 'string' }, description: 'Dimension members to display in Rows (e.g. ["Revenue", "COGS"])' },
         columns: { type: 'array', items: { type: 'string' }, description: 'Dimension members to display in Columns (e.g. ["Oct", "Nov"])' },
-        pov: { type: 'object', description: 'Context dimensions and members. Example: {"Years": ["FY25"], "Currency": ["USD"]}' },
+        pov: { type: 'object', description: 'Context dimensions and members. Example: {"Years": ["FY25"], "Currency": ["USD"], "Account": ["NFS_Expense"]}' },
+        accounts: { type: 'array', items: { type: 'string' }, description: 'Account members to filter by (e.g. ["NFS_Expense"])' },
+        periods: { type: 'array', items: { type: 'string' }, description: 'Period members (e.g. ["Mar"])' },
+        years: { type: 'array', items: { type: 'string' }, description: 'Years members (e.g. ["FY26"])' },
         pivotDim: { type: 'string', description: 'Dimension to pivot to Rows (e.g. "Class", "Department"). If provided, the system will move this dimension to Rows and move Account to POV.' },
         calculationInstructions: { type: 'string', description: 'Optional math/variance instructions' },
         planType: { type: 'string', description: 'Target plan type (default: NSP_NFS)' }
@@ -153,7 +157,7 @@ export const TOOLS_REGISTRY = [
       properties: {
         idorname: { type: 'string', description: 'Form name or form ID' },
         pageMbrList: { type: 'string', description: 'Optional comma-separated list of page/POV dimension members to filter by (e.g. "FY25,Jan")' },
-        userVariableUpdates: { type: 'object', description: 'Map of Dimension to Member name for updating user variables before fetching data (e.g. {"Period": "Dec", "Years": "FY25"}). Use this when the form relies on user variables for its layout.' }
+        userVariableUpdates: { type: 'object', description: 'Map of Dimension to Member name for updating user variables before fetching data (e.g. {"Period": "Dec", "Years": "FY25"}). CRITICAL: If the user explicitly specifies a Year or Period in their prompt, you MUST include them here so the form fetches the correct data!' }
       },
       required: ['idorname']
     }

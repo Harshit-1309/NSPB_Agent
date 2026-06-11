@@ -202,7 +202,7 @@ export class LLMAgent {
           messages: messages,
           tools: this.tools.length > 0 ? this.tools : undefined,
           tool_choice: toolChoiceOption,
-        }, { signal, timeout: 60000 }));
+        }, { signal, timeout: 180000 }));
         
         if (!response?.choices?.length) {
           logger.error('Empty LLM response received', { response: JSON.stringify(response) });

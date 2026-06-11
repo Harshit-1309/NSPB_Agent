@@ -3,6 +3,7 @@
   "grid": {
     "pov": {
       "dimensions": [
+        "Account",
         "Years",
         "Subsidiary",
         "Region",
@@ -11,12 +12,14 @@
         "Tracker",
         "Currency",
         "Department",
-        "Class",
         "Vertical",
         "Scenario",
         "Version"
       ],
       "members": [
+        [
+          "NFS_Expense"
+        ],
         [
           "FY25"
         ],
@@ -42,9 +45,6 @@
           "TD"
         ],
         [
-          "TC"
-        ],
-        [
           "TV"
         ],
         [
@@ -62,6 +62,13 @@
         ],
         "members": [
           [
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
             "Oct",
             "Nov",
             "Dec"
@@ -72,11 +79,11 @@
     "rows": [
       {
         "dimensions": [
-          "Account"
+          "Class"
         ],
         "members": [
           [
-            "NFS_Income"
+            "ILvl0Descendants(TC)"
           ]
         ]
       }

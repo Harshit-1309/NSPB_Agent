@@ -94,9 +94,29 @@ export const segmentOverview = async ({ periodLabel, filterDimensions, pov }: {
   pov: Record<string, string>;
 }) => {
   try {
-    const [monthName, yearShort] = periodLabel.split('-');
-    const year = `FY${yearShort || '25'}`;
-    const priorYear = `FY${parseInt(yearShort || '25') - 1}`;
+    let [monthName, yearShort] = periodLabel.split('-');
+    yearShort = yearShort || '25';
+    
+    // Override with POV if available from the UI dropdowns
+    if (pov && pov['Years']) {
+      const match = pov['Years'].match(/\d+/);
+      if (match) yearShort = match[0];
+    }
+    
+    const tpToMonth = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    if (pov && pov['Period']) {
+      const p = pov['Period'];
+      if (p.toLowerCase().startsWith('tp')) {
+        const idx = parseInt(p.substring(2)) - 1;
+        if (idx >= 0 && idx < 12) monthName = tpToMonth[idx];
+      } else {
+        const monthIdx = tpToMonth.findIndex(m => m.toLowerCase() === p.toLowerCase());
+        if (monthIdx !== -1) monthName = tpToMonth[monthIdx];
+      }
+    }
+
+    const year = `FY${yearShort}`;
+    const priorYear = `FY${parseInt(yearShort) - 1}`;
     
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const targetMonthIdx = months.indexOf(monthName);

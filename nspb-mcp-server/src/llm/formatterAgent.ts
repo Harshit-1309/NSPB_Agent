@@ -237,9 +237,49 @@ export class FormatterAgent {
             });
           }
 
+          let finalType = "report";
+          let finalAnalysis = `# Form Data: ${formName}\nSuccessfully retrieved data from the form.`;
+          let finalCommentary = undefined;
+
+          if (isAnalytical) {
+            finalType = "form_analysis";
+            const analysisMessage = messages.slice().reverse().find(m => m.role === 'assistant' && m.content && !m.tool_calls);
+            finalAnalysis = analysisMessage ? analysisMessage.content : `# Form Data Analysis: ${formName}\nAnalysis complete.`;
+
+            // Generate structured commentary JSON for the UI
+            try {
+              const commentaryResponse = await withRetry(() => openai.chat.completions.create({
+                model: modelId || MODEL,
+                messages: [
+                  { 
+                    role: 'system', 
+                    content: `You are an FP&A assistant. Based on the financial analysis provided, generate structured commentary for the UI.
+Output JSON EXACTLY matching this structure:
+{
+  "vsFcst": [{ "text": "Bullet point text containing {{H0}} for highlights", "highlights": [{ "value": 100, "label": "+100" }] }],
+  "vsLy": [{ "text": "Bullet point text containing {{H0}} for highlights", "highlights": [{ "value": -50, "label": "(50)" }] }]
+}
+Extract the key variances from the analysis. CRITICAL RULE: DO NOT synthesize, invent, or guess any trends, numbers, or years. If there are no explicit vs Forecast or vs Last Year numbers in the text, you MUST leave the arrays empty.`
+                  },
+                  { role: 'user', content: finalAnalysis }
+                ],
+                response_format: { type: "json_object" },
+                temperature: 0.1
+              }));
+              
+              const commentaryStr = commentaryResponse.choices[0].message?.content;
+              if (commentaryStr) {
+                finalCommentary = JSON.parse(commentaryStr);
+              }
+            } catch (err) {
+              logger.error("Failed to generate structured commentary for form_analysis", { error: (err as Error).message });
+            }
+          }
+
           return JSON.stringify({
-            type: "report",
-            analysis: `# Form Data: ${formName}\nSuccessfully retrieved data from the form.`,
+            type: finalType,
+            analysis: finalAnalysis,
+            commentary: finalCommentary,
             table: transformed,
             gridConfig: {
               type: "form",
@@ -252,7 +292,7 @@ export class FormatterAgent {
               pageMbrList: args.pageMbrList || "",
               allowedPageMembersByDim: formGrid.gridInfo?.allowedPageMembersByDim || null
             },
-            filters: pageDims
+              filters: Array.from(new Set([...pageDims, "Period", "Years"]))
           });
         }
       }
